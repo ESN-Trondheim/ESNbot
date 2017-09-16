@@ -1,2 +1,2 @@
 # ESNbot
-A Slack bot for ESN Trondheim
+A Slack bot for ESN Trondheim.
