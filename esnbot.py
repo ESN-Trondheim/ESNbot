@@ -1,5 +1,10 @@
 """
     A slack bot to help ESN Trondheim
+
+    TODO:
+    -Maybe have the bot answer commands in a thread? May be trouble if sending the bot a PM
+    -Should be able to supply arguments to some of the commands e.g. @ESNbot help list,
+     @ESNbot kontaktinfo Lai, @ESNbot kontaktinfo list
 """
 
 import os
@@ -121,7 +126,8 @@ def command_beer_wine_penalty(channel, user):
 
 def command_reimbursement(channel, user):
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user) + "\nReimbursement form: " + os.environ.get("REIMBURSEMENT_FORM")
+                          text=mention_user(user) + "\nReimbursement form: "
+                          + os.environ.get("REIMBURSEMENT_FORM")
                           + "\nGuidelines: " + os.environ.get("REIMBURSEMENT_FORM_GUIDELINES"))
 
 def run():
