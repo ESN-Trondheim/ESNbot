@@ -4,7 +4,17 @@
     TODO:
     -Maybe have the bot answer commands in a thread? May be trouble if sending the bot a PM
     -Should be able to supply arguments to some of the commands e.g. @ESNbot help list,
-     @ESNbot kontaktinfo Lai, @ESNbot kontaktinfo list
+    @ESNbot kontaktinfo Lai, @ESNbot kontaktinfo list
+    -command_contact_info() should have the option of entering a name as an argument.
+    The function should then return the contact info of that specific person,
+    instead of (or in addition to) returning the link to the contact info sheet.
+    -Have ESNbot take over some of the commands that slack bot are doing now,
+    e.g. esnfarger, esnfont and so on. Link to VIM or other relevant documents
+    as well.
+    -beer-wine-penalty should actually be two commands, one should display the rules
+    and a link to the rules, the second should display the current standings.
+    This info should be pulled from a google spreadsheet which contains the relevant information.
+
 """
 
 import os
@@ -75,7 +85,9 @@ def handle_command(command, channel, user):
         "kontaktinfo",
         "ølstraff",
         "vinstraff",
-        "reimbursement"
+        "reimbursement",
+        "esnfarger",
+        "esnfont"
     ]
     if command not in commands:
         slack_client.api_call("chat.postEphemeral", channel=channel, user=user, as_user=True,
@@ -95,7 +107,9 @@ def choose_command(command, channel, user):
         "kontaktinfo": command_contact_info,
         "ølstraff": command_beer_wine_penalty,
         "vinstraff": command_beer_wine_penalty,
-        "reimbursement": command_reimbursement
+        "reimbursement": command_reimbursement,
+        "esnfarger": command_esn_colors,
+        "esnfont": command_esn_font
     }
     func = switcher.get(command)
     return func(channel, user)
@@ -113,7 +127,9 @@ def command_list(channel, user):
                           + "`kontaktinfo`\n"
                           + "`ølstraff`\n"
                           + "`vinstraff`\n"
-                          + "`reimbursement`")
+                          + "`reimbursement`\n"
+                          + "`esnfarger`\n"
+                          + "`esnfont`")
 
 def command_contact_info(channel, user):
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
@@ -129,6 +145,23 @@ def command_reimbursement(channel, user):
                           text=mention_user(user) + "\nReimbursement form: "
                           + os.environ.get("REIMBURSEMENT_FORM")
                           + "\nGuidelines: " + os.environ.get("REIMBURSEMENT_FORM_GUIDELINES"))
+
+def command_esn_colors(channel, user):
+    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
+                          text=mention_user(user) + "\n"
+                          + "• ESN Cyan #00aeef\n"
+                          + "• ESN Magenta #ec008c\n"
+                          + "• ESN Green #7ac143\n"
+                          + "• ESN Orange #f47b20\n"
+                          + "• ESN Dark Blue #2e3192\n"
+                          + "• Black #000000\n"
+                          + "• White #ffffff")
+
+def command_esn_font(channel, user):
+    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
+                          text=mention_user(user) + "\n"
+                          + "Display font: Kelson Sans\n"
+                          + "Content font: Lato")
 
 def run():
     """
