@@ -27,6 +27,16 @@ BOT_ID = os.environ.get("BOT_ID")
 # Constants
 AT_BOT = "<@" + BOT_ID + ">"
 READ_WEBSOCKET_DELAY = 1
+COMMANDS = [
+    "help",
+    "list",
+    "kontaktinfo",
+    "ølstraff",
+    "vinstraff",
+    "reimbursement",
+    "esnfarger",
+    "esnfont"
+    ]
 
 # Instantiate Slack client
 slack_client = SlackClient(os.environ.get("SLACK_BOT_TOKEN")) #pylint: disable=invalid-name
@@ -79,17 +89,8 @@ def handle_command(command, channel, user):
     Nothing
     """
     print("Command used was '" + command + "'", flush=True)
-    commands = [
-        "help",
-        "list",
-        "kontaktinfo",
-        "ølstraff",
-        "vinstraff",
-        "reimbursement",
-        "esnfarger",
-        "esnfont"
-    ]
-    if command not in commands:
+
+    if command not in COMMANDS:
         slack_client.api_call("chat.postEphemeral", channel=channel, user=user, as_user=True,
                               text=mention_user(user)
                               + ", I'm sorry, I dont understand."
@@ -101,7 +102,7 @@ def choose_command(command, channel, user):
     """
     Helper function to choose the command corresponding to the command
     """
-    switcher = {
+    selector = {
         "help": command_help,
         "list": command_list,
         "kontaktinfo": command_contact_info,
@@ -111,7 +112,8 @@ def choose_command(command, channel, user):
         "esnfarger": command_esn_colors,
         "esnfont": command_esn_font
     }
-    func = switcher.get(command)
+    func = selector[command]
+    # Can use func = selector.get(command) as well
     return func(channel, user)
 
 def command_help(channel, user):
@@ -120,16 +122,13 @@ def command_help(channel, user):
                           + " I'm sorry, this isn't implemented yet. It will be soon™.")
 
 def command_list(channel, user):
+    command_string = ""
+    for command in COMMANDS:
+        command_string = command_string + "`" + command + "`\n"
+
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user) + "\nAvailable commands are:\n"
-                          + "`list`\n"
-                          + "`help`\n"
-                          + "`kontaktinfo`\n"
-                          + "`ølstraff`\n"
-                          + "`vinstraff`\n"
-                          + "`reimbursement`\n"
-                          + "`esnfarger`\n"
-                          + "`esnfont`")
+                          text=mention_user(user)
+                          + "\nAvailable commands are:\n" + command_string)
 
 def command_contact_info(channel, user):
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
