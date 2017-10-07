@@ -31,7 +31,8 @@ COMMANDS = [
     "vinstraff",
     "reimbursement",
     "esnfarger",
-    "esnfont"
+    "esnfont",
+    "standliste"
     ]
 
 # Instantiate Slack client
@@ -116,7 +117,8 @@ def choose_command(command, arguments, channel, user):
         "vinstraff": command_beer_wine_penalty,
         "reimbursement": command_reimbursement,
         "esnfarger": command_esn_colors,
-        "esnfont": command_esn_font
+        "esnfont": command_esn_font,
+        "standliste": command_stand_list
     }
     cmds_with_args = {
         "help": command_help
@@ -194,6 +196,10 @@ def command_esn_font(channel, user):
                           text=mention_user(user) + "\n"
                           + "Display font: Kelson Sans\n"
                           + "Content font: Lato")
+
+def command_stand_list(channel, user):
+    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
+                          text=mention_user(user) + "\n" + os.environ.get("STAND_LIST"))
 
 def run():
     """
