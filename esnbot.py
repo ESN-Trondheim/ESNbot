@@ -104,14 +104,11 @@ def handle_command(text, channel, user):
                               + ", I'm sorry, I dont understand."
                               + "\nTry " + AT_BOT + " `list`  or " + AT_BOT + " `help`",)
     else:
-        arguments = []
-        for i in range(0, len(text)):
-            if i == 0:
-                continue
-            arguments.append(text[i])
+        # text.pop(0) # may also use del text[0]
+        arguments = text[1:] # I think this is clearer than passing on a modified text array
         choose_command(command, arguments, channel, user)
 
-def choose_command(command, argument, channel, user):
+def choose_command(command, arguments, channel, user):
     """
     Helper function to choose the command corresponding to the command
     """
@@ -128,7 +125,7 @@ def choose_command(command, argument, channel, user):
     func = selector[command]
     # Can use func = selector.get(command) as well
     if command == "help":
-        return func(channel, argument, user)
+        return func(channel, arguments, user)
     return func(channel, user)
 
 def command_help(channel, argument, user):
