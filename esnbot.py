@@ -11,6 +11,16 @@
     -beer-wine-penalty should actually be two commands, one should display the rules
     and a link to the rules, the second should display the current standings.
     This info should be pulled from a google spreadsheet which contains the relevant information.
+    -Add option to delete all messages except admin messages in a channel
+    -Add support for adding simple commands via a .json or similar.
+    This is meant for commands that simply respond with a predefined response.
+    -The standlist command should display info for that person if name is supplied as an argument
+    -If the bot is tagged in a thread, it should respond in that same thread.
+    -BUG: if you comment with @ESNbot on an uploaded file, the bot will crash.
+    This is because it looks up who the user was,
+    but this message doesn't have a user key in the dict.
+    This is somewhat fixed. The bot will not crash, but it will respond to the channel
+    instead of as a new comment in the thread.
 """
 
 import os
@@ -56,6 +66,9 @@ def parse_slack_output(slack_rtm_output):
             print(output, flush=True)
             if output and 'text' in output and AT_BOT in output['text']:
                 text = output['text'].split(AT_BOT)[1].strip().lower()
+                if 'subtype' in output:
+                    if output['subtype'] == "file_comment":
+                        return (text, output['channel'], output['file']['user'])
                 if output['user'] == BOT_ID:
                     return None, None, None #Don't care about the bot's own messages
                 return (text, output['channel'], output['user'])
