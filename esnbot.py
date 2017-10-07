@@ -14,7 +14,6 @@
     -beer-wine-penalty should actually be two commands, one should display the rules
     and a link to the rules, the second should display the current standings.
     This info should be pulled from a google spreadsheet which contains the relevant information.
-
 """
 
 import os
@@ -54,12 +53,14 @@ def parse_slack_output(slack_rtm_output):
     If this information is not present, None, None, None is returned.
     """
     output_list = slack_rtm_output
-    if output_list and len(output_list) > 0:
+    if output_list:
         for output in output_list:
             print(output, flush=True)
             if output and 'text' in output and AT_BOT in output['text']:
-                return (output['text'].split(AT_BOT)[1].strip().lower(), output['channel'],
-                        output['user'])
+                text = output['text'].split(AT_BOT)[1].strip().lower()
+                if output['user'] == BOT_ID:
+                    return None, None, None #Don't care about the bot's own messages
+                return (text, output['channel'], output['user'])
     return None, None, None
 
 def mention_user(user):
@@ -74,7 +75,7 @@ def mention_user(user):
     """
     return "<@" + user + ">"
 
-def handle_command(command, channel, user):
+def handle_command(text, channel, user):
     """
     Handles a command directed at the bot
 
@@ -88,17 +89,29 @@ def handle_command(command, channel, user):
     :Returns:
     Nothing
     """
+    if not text:
+        slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
+                              text=mention_user(user) + " You tagged me!")
+        return
+
+    text = text.split()
+    command = text[0]
     print("Command used was '" + command + "'", flush=True)
 
     if command not in COMMANDS:
         slack_client.api_call("chat.postEphemeral", channel=channel, user=user, as_user=True,
                               text=mention_user(user)
                               + ", I'm sorry, I dont understand."
-                              + "\nTry '" + AT_BOT + " list' for a list of available commands",)
+                              + "\nTry " + AT_BOT + " `list`  or " + AT_BOT + " `help`",)
     else:
-        choose_command(command, channel, user)
+        arguments = []
+        for i in range(0, len(text)):
+            if i == 0:
+                continue
+            arguments.append(text[i])
+        choose_command(command, arguments, channel, user)
 
-def choose_command(command, channel, user):
+def choose_command(command, argument, channel, user):
     """
     Helper function to choose the command corresponding to the command
     """
@@ -114,12 +127,36 @@ def choose_command(command, channel, user):
     }
     func = selector[command]
     # Can use func = selector.get(command) as well
+    if command == "help":
+        return func(channel, argument, user)
     return func(channel, user)
 
-def command_help(channel, user):
-    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user)
-                          + " I'm sorry, this isn't implemented yet. It will be soon™.")
+def command_help(channel, argument, user):
+    help_items = {
+        "help": "Use `help 'command'` to get help using that command.\n"
+                + "Some examples include:\n"
+                + "•" + AT_BOT + " `help`\n"
+                + "•" + AT_BOT + " `help list`\n"
+                + "For a list of all available commands, use  `list`",
+        "list": "Displays a list of all available commands.",
+        "kontaktinfo": "Displays the link to the contact info sheet.",
+        "ølstraff": "Displays the link to the rules.",
+        "vinstraff": "Displays the link to the rules.",
+        "reimbursement": "Displays the link to the reimbursement sheet and the guidelines.",
+        "esnfarger": "Displays the official ESN colors along with their hex color code.",
+        "esnfont": "Displays the names of the official ESN fonts."
+    }
+    if not argument:
+        argument.append("help")
+    if argument[0] in help_items:
+        slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
+                              text=mention_user(user)
+                              + "\n`" + argument[0] + "`\n"
+                              + help_items[argument[0]])
+    else:
+        slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
+                              text=mention_user(user)
+                              + "I'm not sure what you want help with.")
 
 def command_list(channel, user):
     command_string = ""
@@ -128,7 +165,7 @@ def command_list(channel, user):
 
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
                           text=mention_user(user)
-                          + "\nAvailable commands are:\n" + command_string)
+                          + "\nAvailable commands:\n" + command_string)
 
 def command_contact_info(channel, user):
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
@@ -136,8 +173,7 @@ def command_contact_info(channel, user):
 
 def command_beer_wine_penalty(channel, user):
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user)
-                          + " I'm sorry, this isn't implemented yet. It will be soon™.")
+                          text=mention_user(user) + "\n" + os.environ.get("BEER_WINE_PENALTY"))
 
 def command_reimbursement(channel, user):
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
@@ -170,7 +206,7 @@ def run():
         print("ESNbot connected and running.", flush=True)
         while True:
             command, channel, user = parse_slack_output(slack_client.rtm_read())
-            if command and channel:
+            if channel:
                 handle_command(command, channel, user)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
