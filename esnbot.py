@@ -8,9 +8,6 @@
     -command_contact_info() should have the option of entering a name as an argument.
     The function should then return the contact info of that specific person,
     instead of (or in addition to) returning the link to the contact info sheet.
-    -Have ESNbot take over some of the commands that slack bot are doing now,
-    e.g. esnfarger, esnfont and so on. Link to VIM or other relevant documents
-    as well.
     -beer-wine-penalty should actually be two commands, one should display the rules
     and a link to the rules, the second should display the current standings.
     This info should be pulled from a google spreadsheet which contains the relevant information.
@@ -112,8 +109,7 @@ def choose_command(command, arguments, channel, user):
     """
     Helper function to choose the command corresponding to the command
     """
-    selector = {
-        "help": command_help,
+    cmds = {
         "list": command_list,
         "kontaktinfo": command_contact_info,
         "ølstraff": command_beer_wine_penalty,
@@ -122,10 +118,14 @@ def choose_command(command, arguments, channel, user):
         "esnfarger": command_esn_colors,
         "esnfont": command_esn_font
     }
-    func = selector[command]
-    # Can use func = selector.get(command) as well
-    if command == "help":
+    cmds_with_args = {
+        "help": command_help
+    }
+    if command in cmds_with_args:
+        func = cmds_with_args[command]
         return func(channel, arguments, user)
+    func = cmds[command]
+    # Can use func = selector.get(command) as well
     return func(channel, user)
 
 def command_help(channel, argument, user):
