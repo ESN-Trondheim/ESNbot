@@ -157,6 +157,17 @@ def post_message(channel, message):
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True, text=message)
 
 def post_ephemeral_message(channel, user, message):
+    """
+    Posts an ephemeral message directed at a user to a chat channel as the bot
+
+    :Args:
+
+    `channel` the ID of the channel to post the message in.
+
+    `user` the ID of the user the message should be directed at.
+
+    `message` the message to be posted. Should be a string.
+    """
     slack_client.api_call("chat.postEphemeral", channel=channel,
                           user=user, as_user=True, text=message)
 
