@@ -79,10 +79,12 @@ def mention_user(user):
     Helper function to make it easier to mention users
 
     :Args:
-    `user` is the ID of the user
+
+    `user` the ID of the user
 
     :Returns:
-    A string that mentions the user
+
+    A string formatted in a way that will mention the user on Slack
     """
     return "<@" + user + ">"
 
@@ -101,8 +103,7 @@ def handle_command(text, channel, user):
     Nothing
     """
     if not text:
-        slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                              text=mention_user(user) + " You tagged me!")
+        respond_to(channel, user, "You tagged me!")
         return
 
     text = text.split()
@@ -144,9 +145,29 @@ def choose_command(command, arguments, channel, user):
     return func(channel, user)
 
 def post_message(channel, message):
+    """
+    Posts a message to a chat channel as the bot
+
+    :Args:
+
+    `channel` the ID of the channel to post the message in
+
+    `message` the message to be posted. Should be a string.
+    """
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True, text=message)
 
 def respond_to(channel, user, message):
+    """
+    Posts a response directed at a user.
+
+    :Args:
+
+    `channel` the ID of the channel to post the message in
+
+    `message` the message to be posted. Should be a string.
+
+    `user` the ID of the user the message should be directed at.
+    """
     post_message(channel, mention_user(user) + "\n" + message)
 
 def command_help(channel, argument, user):
