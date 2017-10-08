@@ -143,6 +143,12 @@ def choose_command(command, arguments, channel, user):
     # Can use func = selector.get(command) as well
     return func(channel, user)
 
+def post_message(channel, message):
+    slack_client.api_call("chat.postMessage", channel=channel, as_user=True, text=message)
+
+def respond_to(channel, user, message):
+    post_message(channel, mention_user(user) + "\n" + message)
+
 def command_help(channel, argument, user):
     help_items = {
         "help": "Use `help 'command'` to get help using that command.\n"
@@ -161,58 +167,41 @@ def command_help(channel, argument, user):
     if not argument:
         argument.append("help")
     if argument[0] in help_items:
-        slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                              text=mention_user(user)
-                              + "\n`" + argument[0] + "`\n"
-                              + help_items[argument[0]])
+        respond_to(channel, user, "`" + argument[0] + "`\n" + help_items[argument[0]])
     else:
-        slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                              text=mention_user(user)
-                              + "I'm not sure what you want help with.")
+        respond_to(channel, user, "I'm not sure what you want help with.")
 
 def command_list(channel, user):
     command_string = ""
     for command in COMMANDS:
         command_string = command_string + "`" + command + "`\n"
-
-    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user)
-                          + "\nAvailable commands:\n" + command_string)
+    respond_to(channel, user, "Available commands:\n" + command_string)
 
 def command_contact_info(channel, user):
-    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user) + "\n" + os.environ.get("CONTACT_INFO"))
+    respond_to(channel, user, os.environ.get("CONTACT_INFO"))
 
 def command_beer_wine_penalty(channel, user):
-    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user) + "\n" + os.environ.get("BEER_WINE_PENALTY"))
+    respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
 
 def command_reimbursement(channel, user):
-    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user) + "\nReimbursement form: "
-                          + os.environ.get("REIMBURSEMENT_FORM")
-                          + "\nGuidelines: " + os.environ.get("REIMBURSEMENT_FORM_GUIDELINES"))
+    respond_to(channel, user, "Reimbursement form: " + os.environ.get("REIMBURSEMENT_FORM")
+               + "\nGuidelines: " + os.environ.get("REIMBURSEMENT_FORM_GUIDELINES"))
 
 def command_esn_colors(channel, user):
-    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user) + "\n"
-                          + "• ESN Cyan #00aeef\n"
-                          + "• ESN Magenta #ec008c\n"
-                          + "• ESN Green #7ac143\n"
-                          + "• ESN Orange #f47b20\n"
-                          + "• ESN Dark Blue #2e3192\n"
-                          + "• Black #000000\n"
-                          + "• White #ffffff")
+    respond_to(channel, user,
+               "• ESN Cyan #00aeef\n"
+               + "• ESN Magenta #ec008c\n"
+               + "• ESN Green #7ac143\n"
+               + "• ESN Orange #f47b20\n"
+               + "• ESN Dark Blue #2e3192\n"
+               + "• Black #000000\n"
+               + "• White #ffffff")
 
 def command_esn_font(channel, user):
-    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user) + "\n"
-                          + "Display font: Kelson Sans\n"
-                          + "Content font: Lato")
+    respond_to(channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
 
 def command_stand_list(channel, user):
-    slack_client.api_call("chat.postMessage", channel=channel, as_user=True,
-                          text=mention_user(user) + "\n" + os.environ.get("STAND_LIST"))
+    respond_to(channel, user, os.environ.get("STAND_LIST"))
 
 def run():
     """
