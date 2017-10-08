@@ -111,10 +111,10 @@ def handle_command(text, channel, user):
     print("Command used was '" + command + "'", flush=True)
 
     if command not in COMMANDS:
-        slack_client.api_call("chat.postEphemeral", channel=channel, user=user, as_user=True,
-                              text=mention_user(user)
-                              + ", I'm sorry, I dont understand."
-                              + "\nTry " + AT_BOT + " `list`  or " + AT_BOT + " `help`",)
+        respond_to(channel, user,
+                   "I'm sorry, I dont understand."
+                   + "\nTry " + AT_BOT + " `list`  or " + AT_BOT + " `help`",
+                   ephemeral=True)
     else:
         # text.pop(0) # may also use del text[0]
         arguments = text[1:] # I think this is clearer than passing on a modified text array
@@ -156,7 +156,11 @@ def post_message(channel, message):
     """
     slack_client.api_call("chat.postMessage", channel=channel, as_user=True, text=message)
 
-def respond_to(channel, user, message):
+def post_ephemeral_message(channel, user, message):
+    slack_client.api_call("chat.postEphemeral", channel=channel,
+                          user=user, as_user=True, text=message)
+
+def respond_to(channel, user, message, **kwargs):
     """
     Posts a response directed at a user.
 
@@ -168,6 +172,10 @@ def respond_to(channel, user, message):
 
     `user` the ID of the user the message should be directed at.
     """
+    if kwargs:
+        if "ephemeral" in kwargs:
+            post_ephemeral_message(channel, user, mention_user(user) + "\n" + message)
+            return
     post_message(channel, mention_user(user) + "\n" + message)
 
 def command_help(channel, argument, user):
