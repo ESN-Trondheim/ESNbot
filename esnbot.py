@@ -28,6 +28,8 @@
 import os
 import time
 from slackclient import SlackClient
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # esnbot's ID
 BOT_ID = os.environ.get("BOT_ID")
@@ -49,6 +51,15 @@ COMMANDS = [
 
 # Instantiate Slack client
 slack_client = SlackClient(os.environ.get("SLACK_BOT_TOKEN")) #pylint: disable=invalid-name
+
+# gspread
+SCOPE = ['https://spreadsheets.google.com/feeds']
+CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name('drivecredentials.json', SCOPE)
+
+SHEET = gspread.authorize(CREDENTIALS)
+WORKSHEET = SHEET.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
+
+print("Worksheet opened")
 
 def parse_slack_output(slack_rtm_output):
     """
