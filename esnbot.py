@@ -203,7 +203,8 @@ def command_help(channel, argument, user):
         "vinstraff": "Displays the link to the rules.",
         "reimbursement": "Displays the link to the reimbursement sheet and the guidelines.",
         "esnfarger": "Displays the official ESN colors along with their hex color code.",
-        "esnfont": "Displays the names of the official ESN fonts."
+        "esnfont": "Displays the names of the official ESN fonts.",
+        "standliste": "Displays the link to the stand list sheet."
     }
     if not argument:
         argument.append("help")
