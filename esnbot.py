@@ -16,6 +16,8 @@
     This is meant for commands that simply respond with a predefined response.
     -The standlist command should display info for that person if name is supplied as an argument
     -If the bot is tagged in a thread, it should respond in that same thread.
+    May use a kwarg to specify that it is a thread
+    -Should print timestamps in console when printing output
     -BUG: if you comment with @ESNbot on an uploaded file, the bot will crash.
     This is because it looks up who the user was,
     but this message doesn't have a user key in the dict.
@@ -183,10 +185,9 @@ def respond_to(channel, user, message, **kwargs):
 
     `user` the ID of the user the message should be directed at.
     """
-    if kwargs:
-        if "ephemeral" in kwargs:
-            post_ephemeral_message(channel, user, mention_user(user) + "\n" + message)
-            return
+    if kwargs.get("ephemeral", False):
+        post_ephemeral_message(channel, user, mention_user(user) + "\n" + message)
+        return
     post_message(channel, mention_user(user) + "\n" + message)
 
 def command_help(channel, argument, user):
