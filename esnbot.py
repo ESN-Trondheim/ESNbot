@@ -59,8 +59,6 @@ CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name('drivecredentials
 SHEET = gspread.authorize(CREDENTIALS)
 WORKSHEET = SHEET.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
 
-print("Worksheet opened")
-
 def parse_slack_output(slack_rtm_output):
     """
     Parses messages written in channels that the bot is a part of.
