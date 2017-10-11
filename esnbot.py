@@ -56,8 +56,8 @@ slack_client = SlackClient(os.environ.get("SLACK_BOT_TOKEN")) #pylint: disable=i
 SCOPE = ['https://spreadsheets.google.com/feeds']
 CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name('drivecredentials.json', SCOPE)
 
-SHEET = gspread.authorize(CREDENTIALS)
-WORKSHEET = SHEET.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
+GSHEET = gspread.authorize(CREDENTIALS)
+WORKSHEET = GSHEET.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
 
 def parse_slack_output(slack_rtm_output):
     """
@@ -138,15 +138,15 @@ def choose_command(command, arguments, channel, user):
     cmds = {
         "list": command_list,
         "kontaktinfo": command_contact_info,
-        "ølstraff": command_beer_wine_penalty,
-        "vinstraff": command_beer_wine_penalty,
         "reimbursement": command_reimbursement,
         "esnfarger": command_esn_colors,
         "esnfont": command_esn_font,
         "standliste": command_stand_list
     }
     cmds_with_args = {
-        "help": command_help
+        "help": command_help,
+        "ølstraff": command_beer_wine_penalty,
+        "vinstraff": command_beer_wine_penalty
     }
     if command in cmds_with_args:
         func = cmds_with_args[command]
@@ -231,8 +231,22 @@ def command_list(channel, user):
 def command_contact_info(channel, user):
     respond_to(channel, user, os.environ.get("CONTACT_INFO"))
 
-def command_beer_wine_penalty(channel, user):
-    respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
+def command_beer_wine_penalty(channel, argument, user):
+    if not argument:
+        respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
+    else:
+        beer_wine_records = WORKSHEET.get_all_records()
+        response = ""
+        for column in beer_wine_records:
+            if column['Fornavn'].lower().startswith(argument[0]):
+                navn = column['Fornavn'] + " " + column['Etternavn']
+                response = (response + "*" + navn + ":*" + " Vinstraff: " + str(column['Vinstraff'])
+                            + " Ølstraff: " + str(column['Ølstraff']) + "\n")
+        if response:
+            respond_to(channel, user, response)
+        else:
+            respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
+
 
 def command_reimbursement(channel, user):
     respond_to(channel, user, "Reimbursement form: " + os.environ.get("REIMBURSEMENT_FORM")
