@@ -18,6 +18,8 @@
     -If the bot is tagged in a thread, it should respond in that same thread.
     May use a kwarg to specify that it is a thread
     -Should print timestamps in console when printing output
+    -Ølstraff/vinstraff should be able to post the full standings
+    (or perhaps only the ones with penalties)
     -BUG: if you comment with @ESNbot on an uploaded file, the bot will crash.
     This is because it looks up who the user was,
     but this message doesn't have a user key in the dict.
@@ -57,7 +59,10 @@ SCOPE = ['https://spreadsheets.google.com/feeds']
 CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name('drivecredentials.json', SCOPE)
 
 GSHEET = gspread.authorize(CREDENTIALS)
-WORKSHEET = GSHEET.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
+BEER_WINE_SHEET = GSHEET.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
+print("Beer/wine-sheet opened...", flush=True)
+CONTACT_INFO_SHEET = GSHEET.open_by_key(os.environ.get("CONTACT_INFO_KEY")).sheet1
+print("Contact info sheet opened...", flush=True)
 
 def parse_slack_output(slack_rtm_output):
     """
@@ -137,7 +142,6 @@ def choose_command(command, arguments, channel, user):
     """
     cmds = {
         "list": command_list,
-        "kontaktinfo": command_contact_info,
         "reimbursement": command_reimbursement,
         "esnfarger": command_esn_colors,
         "esnfont": command_esn_font,
@@ -146,7 +150,8 @@ def choose_command(command, arguments, channel, user):
     cmds_with_args = {
         "help": command_help,
         "ølstraff": command_beer_wine_penalty,
-        "vinstraff": command_beer_wine_penalty
+        "vinstraff": command_beer_wine_penalty,
+        "kontaktinfo": command_contact_info
     }
     if command in cmds_with_args:
         func = cmds_with_args[command]
@@ -228,20 +233,36 @@ def command_list(channel, user):
         command_string = command_string + "`" + command + "`\n"
     respond_to(channel, user, "Available commands:\n" + command_string)
 
-def command_contact_info(channel, user):
-    respond_to(channel, user, os.environ.get("CONTACT_INFO"))
+def command_contact_info(channel, argument, user):
+    if not argument:
+        respond_to(channel, user, os.environ.get("CONTACT_INFO"))
+    else:
+        contact_info_records = CONTACT_INFO_SHEET.get_all_records()
+        response = ""
+        for column in contact_info_records:
+            if column['Fornavn'].lower().startswith(argument[0]):
+                name = column['Fornavn'] + " " + column['Etternavn']
+                response = (response + "```" + name + ":"
+                            + " Tlf: " + str(column['Telefon'])
+                            + " E-post: " + str(column['E-post']) + "```\n")
+        if response:
+            respond_to(channel, user, response)
+        else:
+            respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
 
 def command_beer_wine_penalty(channel, argument, user):
     if not argument:
         respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
     else:
-        beer_wine_records = WORKSHEET.get_all_records()
+        # possibly add in a try statement here
+        beer_wine_records = BEER_WINE_SHEET.get_all_records()
         response = ""
         for column in beer_wine_records:
             if column['Fornavn'].lower().startswith(argument[0]):
-                navn = column['Fornavn'] + " " + column['Etternavn']
-                response = (response + "*" + navn + ":*" + " Vinstraff: " + str(column['Vinstraff'])
-                            + " Ølstraff: " + str(column['Ølstraff']) + "\n")
+                name = column['Fornavn'] + " " + column['Etternavn']
+                response = (response + "```" + name + ":*"
+                            + " Vinstraff: " + str(column['Vinstraff'])
+                            + " Ølstraff: " + str(column['Ølstraff']) + "```\n")
         if response:
             respond_to(channel, user, response)
         else:
