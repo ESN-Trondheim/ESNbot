@@ -3,14 +3,10 @@
 
     TODO:
     -Maybe have the bot answer commands in a thread? May be trouble if sending the bot a PM
-    -Should be able to supply arguments to some of the commands e.g. @ESNbot help list,
-    @ESNbot kontaktinfo Lai, @ESNbot kontaktinfo list
-    -command_contact_info() should have the option of entering a name as an argument.
-    The function should then return the contact info of that specific person,
-    instead of (or in addition to) returning the link to the contact info sheet.
     -beer-wine-penalty should actually be two commands, one should display the rules
     and a link to the rules, the second should display the current standings.
     This info should be pulled from a google spreadsheet which contains the relevant information.
+    (sort of done, may now use the command followed by a name to get standings)
     -Add option to delete all messages except admin messages in a channel
     -Add support for adding simple commands via a .json or similar.
     This is meant for commands that simply respond with a predefined response.
@@ -20,6 +16,10 @@
     -Should print timestamps in console when printing output
     -Ølstraff/vinstraff should be able to post the full standings
     (or perhaps only the ones with penalties)
+    -watermarking of pictures
+    -making cover photos for facebook events
+    -update help sections of kontaktinfo and øl-/vinstraff. 
+    No longer accurate that they just display links, they may also find info about persons
     -BUG: if you comment with @ESNbot on an uploaded file, the bot will crash.
     This is because it looks up who the user was,
     but this message doesn't have a user key in the dict.
@@ -58,11 +58,11 @@ slack_client = SlackClient(os.environ.get("SLACK_BOT_TOKEN")) #pylint: disable=i
 SCOPE = ['https://spreadsheets.google.com/feeds']
 CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name('drivecredentials.json', SCOPE)
 
-GSHEET = gspread.authorize(CREDENTIALS)
+"""GSHEET = gspread.authorize(CREDENTIALS)
 BEER_WINE_SHEET = GSHEET.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
 print("Beer/wine-sheet opened...", flush=True)
 CONTACT_INFO_SHEET = GSHEET.open_by_key(os.environ.get("CONTACT_INFO_KEY")).sheet1
-print("Contact info sheet opened...", flush=True)
+print("Contact info sheet opened...", flush=True)"""
 
 def parse_slack_output(slack_rtm_output):
     """
@@ -79,12 +79,13 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list:
         for output in output_list:
-            print(output, flush=True)
+            if output['type'] != 'desktop_notification' and output['type'] != 'reconnect_url':
+                # maybe make this filter out ephemeral messages as well, like google drive messages
+                print(output, flush=True)
             if output and 'text' in output and AT_BOT in output['text']:
                 text = output['text'].split(AT_BOT)[1].strip().lower()
-                if 'subtype' in output:
-                    if output['subtype'] == "file_comment":
-                        return (text, output['channel'], output['file']['user'])
+                if output.get('subtype') == "file_comment:":
+                    return (text, output['channel'], output['file']['user'])
                 if output['user'] == BOT_ID:
                     return None, None, None #Don't care about the bot's own messages
                 return (text, output['channel'], output['user'])
@@ -237,7 +238,11 @@ def command_contact_info(channel, argument, user):
     if not argument:
         respond_to(channel, user, os.environ.get("CONTACT_INFO"))
     else:
-        contact_info_records = CONTACT_INFO_SHEET.get_all_records()
+        #global GSHEET
+        gsheet = gspread.authorize(CREDENTIALS)
+        contact_info_sheet = gsheet.open_by_key(os.environ.get("CONTACT_INFO_KEY")).sheet1
+        print("Contact info sheet opened...", flush=True)
+        contact_info_records = contact_info_sheet.get_all_records()
         response = ""
         for column in contact_info_records:
             if column['Fornavn'].lower().startswith(argument[0]):
@@ -255,12 +260,16 @@ def command_beer_wine_penalty(channel, argument, user):
         respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
     else:
         # possibly add in a try statement here
-        beer_wine_records = BEER_WINE_SHEET.get_all_records()
+        #global GSHEET
+        gsheet = gspread.authorize(CREDENTIALS)
+        beer_wine_sheet = gsheet.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
+        print("Beer/wine-sheet opened...", flush=True)
+        beer_wine_records = beer_wine_sheet.get_all_records()
         response = ""
         for column in beer_wine_records:
             if column['Fornavn'].lower().startswith(argument[0]):
                 name = column['Fornavn'] + " " + column['Etternavn']
-                response = (response + "```" + name + ":*"
+                response = (response + "```" + name + ":"
                             + " Vinstraff: " + str(column['Vinstraff'])
                             + " Ølstraff: " + str(column['Ølstraff']) + "```\n")
         if response:
@@ -294,7 +303,7 @@ def run():
         Main function
     """
     if slack_client.rtm_connect():
-        print("ESNbot connected and running.", flush=True)
+        print("ESNbot connected and running...", flush=True)
         while True:
             command, channel, user = parse_slack_output(slack_client.rtm_read())
             if channel:
