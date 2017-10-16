@@ -18,8 +18,10 @@
     (or perhaps only the ones with penalties)
     -watermarking of pictures
     -making cover photos for facebook events
-    -update help sections of kontaktinfo and øl-/vinstraff. 
-    No longer accurate that they just display links, they may also find info about persons
+    -if kontaktinfo can't find a user, it responds that it can't find anyone with that name.
+    The name it responds with is always in lower case. This isn't necessary, and should be fixed.
+    The argument should be displayed exactly as entered, it should not be converted to lower case.
+    May still use lower() for checks, but shouldn't actually change the string/input.
     -BUG: if you comment with @ESNbot on an uploaded file, the bot will crash.
     This is because it looks up who the user was,
     but this message doesn't have a user key in the dict.
@@ -213,9 +215,12 @@ def command_help(channel, argument, user):
                 + "•" + AT_BOT + " `help list`\n"
                 + "For a list of all available commands, use  `list`",
         "list": "Displays a list of all available commands.",
-        "kontaktinfo": "Displays the link to the contact info sheet.",
-        "ølstraff": "Displays the link to the rules.",
-        "vinstraff": "Displays the link to the rules.",
+        "kontaktinfo": "Use `kontaktinfo 'first name'` to get contact info for `first name`\n"
+                       + "Displays the link to the contact info sheet if no name is entered.",
+        "ølstraff": "Use `ølstraff 'first name'` to get the standings for `first name`\n"
+                    + "Displays the link to the rules if no name is entered.",
+        "vinstraff": "Use `vinstraff 'first name'` to get the standings for `first name`\n"
+                     + "Displays the link to the rules if no name is entered.",
         "reimbursement": "Displays the link to the reimbursement sheet and the guidelines.",
         "esnfarger": "Displays the official ESN colors along with their hex color code.",
         "esnfont": "Displays the names of the official ESN fonts.",
@@ -253,7 +258,7 @@ def command_contact_info(channel, argument, user):
         if response:
             respond_to(channel, user, response)
         else:
-            respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
+            respond_to(channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
 
 def command_beer_wine_penalty(channel, argument, user):
     if not argument:
