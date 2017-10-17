@@ -83,15 +83,25 @@ def parse_slack_output(slack_rtm_output):
         for output in output_list:
             if output['type'] != 'desktop_notification' and output['type'] != 'reconnect_url':
                 # maybe make this filter out ephemeral messages as well, like google drive messages
-                print(output, flush=True)
+                print(timestamp() + str(output) + "\n", flush=True)
             if output and 'text' in output and AT_BOT in output['text']:
                 text = output['text'].split(AT_BOT)[1].strip().lower()
-                if output.get('subtype') == "file_comment:":
+                if output.get('subtype') == "file_comment":
                     return (text, output['channel'], output['file']['user'])
-                if output['user'] == BOT_ID:
+                #futureproofing if the bot will ever respond to file comments as a file comment.
+                #or output.get('file').get('user') == BOT_ID
+                #this does not work if 'file' does not exist. 'file' is then None,
+                #and you can't call get() on a NoneType object
+                if output.get('user') == BOT_ID:
                     return None, None, None #Don't care about the bot's own messages
                 return (text, output['channel'], output['user'])
     return None, None, None
+
+def timestamp():
+    """
+    Returns a timestamp formatted properly as a string.
+    """
+    return time.strftime("%d-%m-%Y %H:%M:%S: ", time.localtime())
 
 def mention_user(user):
     """
@@ -127,7 +137,7 @@ def handle_command(text, channel, user):
 
     text = text.split()
     command = text[0]
-    print("Command used was '" + command + "'", flush=True)
+    print(timestamp() + "Command used was '" + command + "'", flush=True)
 
     if command not in COMMANDS:
         respond_to(channel, user,
@@ -246,7 +256,7 @@ def command_contact_info(channel, argument, user):
         #global GSHEET
         gsheet = gspread.authorize(CREDENTIALS)
         contact_info_sheet = gsheet.open_by_key(os.environ.get("CONTACT_INFO_KEY")).sheet1
-        print("Contact info sheet opened...", flush=True)
+        print(timestamp() + "Contact info sheet opened...", flush=True)
         contact_info_records = contact_info_sheet.get_all_records()
         response = ""
         for column in contact_info_records:
@@ -268,7 +278,7 @@ def command_beer_wine_penalty(channel, argument, user):
         #global GSHEET
         gsheet = gspread.authorize(CREDENTIALS)
         beer_wine_sheet = gsheet.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
-        print("Beer/wine-sheet opened...", flush=True)
+        print(timestamp() + "Beer/wine-sheet opened...", flush=True)
         beer_wine_records = beer_wine_sheet.get_all_records()
         response = ""
         for column in beer_wine_records:
@@ -308,14 +318,14 @@ def run():
         Main function
     """
     if slack_client.rtm_connect():
-        print("ESNbot connected and running...", flush=True)
+        print(timestamp() + "ESNbot connected and running...", flush=True)
         while True:
             command, channel, user = parse_slack_output(slack_client.rtm_read())
             if channel:
                 handle_command(command, channel, user)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
-        print("Connection failed.")
+        print(timestamp() + "Connection failed.", flush=True)
 
 if __name__ == "__main__":
     run()
