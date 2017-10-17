@@ -17,10 +17,10 @@
     (or perhaps only the ones with penalties)
     -watermarking of pictures
     -making cover photos for facebook events
-    -if kontaktinfo can't find a user, it responds that it can't find anyone with that name.
-    The name it responds with is always in lower case. This isn't necessary, and should be fixed.
-    The argument should be displayed exactly as entered, it should not be converted to lower case.
-    May still use lower() for checks, but shouldn't actually change the string/input.
+    -To make it easier to process different kind of commands,
+    output itself should also be returned in parse_slack_output().
+    Then all information about a message is available to the bot.
+    This is useful for e.g. files to be processed (watermarks etc).
     -BUG: if you comment with @ESNbot on an uploaded file, the bot will crash.
     This is because it looks up who the user was,
     but this message doesn't have a user key in the dict.
@@ -84,7 +84,7 @@ def parse_slack_output(slack_rtm_output):
                 # maybe make this filter out ephemeral messages as well, like google drive messages
                 print(timestamp() + str(output) + "\n", flush=True)
             if output and 'text' in output and AT_BOT in output['text']:
-                text = output['text'].split(AT_BOT)[1].strip().lower()
+                text = output['text'].split(AT_BOT)[1].strip()
                 if output.get('subtype') == "file_comment":
                     return (text, output['channel'], output['file']['user'])
                 #futureproofing if the bot will ever respond to file comments as a file comment.
@@ -135,7 +135,7 @@ def handle_command(text, channel, user):
         return
 
     text = text.split()
-    command = text[0]
+    command = text[0].lower()
     print(timestamp() + "Command used was '" + command + "'", flush=True)
 
     if command not in COMMANDS:
@@ -237,8 +237,8 @@ def command_help(channel, argument, user):
     }
     if not argument:
         argument.append("help")
-    if argument[0] in help_items:
-        respond_to(channel, user, "`" + argument[0] + "`\n" + help_items[argument[0]])
+    if argument[0].lower() in help_items:
+        respond_to(channel, user, "`" + argument[0].lower() + "`\n" + help_items[argument[0]])
     else:
         respond_to(channel, user, "I'm not sure what you want help with.")
 
@@ -259,7 +259,7 @@ def command_contact_info(channel, argument, user):
         contact_info_records = contact_info_sheet.get_all_records()
         response = ""
         for column in contact_info_records:
-            if column['Fornavn'].lower().startswith(argument[0]):
+            if column['Fornavn'].lower().startswith(argument[0].lower()):
                 name = column['Fornavn'] + " " + column['Etternavn']
                 response = (response + "```" + name + ":"
                             + " Tlf: " + str(column['Telefon'])
@@ -281,7 +281,7 @@ def command_beer_wine_penalty(channel, argument, user):
         beer_wine_records = beer_wine_sheet.get_all_records()
         response = ""
         for column in beer_wine_records:
-            if column['Fornavn'].lower().startswith(argument[0]):
+            if column['Fornavn'].lower().startswith(argument[0].lower()):
                 name = column['Fornavn'] + " " + column['Etternavn']
                 response = (response + "```" + name + ":"
                             + " Vinstraff: " + str(column['Vinstraff'])
@@ -319,9 +319,9 @@ def run():
     if slack_client.rtm_connect():
         print(timestamp() + "ESNbot connected and running...", flush=True)
         while True:
-            command, channel, user = parse_slack_output(slack_client.rtm_read())
+            text, channel, user = parse_slack_output(slack_client.rtm_read())
             if channel:
-                handle_command(command, channel, user)
+                handle_command(text, channel, user)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print(timestamp() + "Connection failed.", flush=True)
