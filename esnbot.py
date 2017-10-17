@@ -13,7 +13,6 @@
     -The standlist command should display info for that person if name is supplied as an argument
     -If the bot is tagged in a thread, it should respond in that same thread.
     May use a kwarg to specify that it is a thread
-    -Should print timestamps in console when printing output
     -Ølstraff/vinstraff should be able to post the full standings
     (or perhaps only the ones with penalties)
     -watermarking of pictures
