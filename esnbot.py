@@ -31,6 +31,7 @@
 
 import os
 import time
+
 from slackclient import SlackClient
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -81,7 +82,9 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list:
         for output in output_list:
-            if output['type'] != 'desktop_notification' and output['type'] != 'reconnect_url':
+            if (output['type'] != 'desktop_notification'
+                    and output['type'] != 'reconnect_url'
+                    and output['type'] != 'presence_change'):
                 # maybe make this filter out ephemeral messages as well, like google drive messages
                 print(timestamp() + str(output) + "\n", flush=True)
             if output and 'text' in output and AT_BOT in output['text']:
