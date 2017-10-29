@@ -337,11 +337,13 @@ def command_watermark(channel, argument, user, output):
         watermark = ["watermark"]
         command_help(channel, watermark, user, output)
     else:
+        file_id = output['file']['id']
+        token = os.environ.get("SLACK_BOT_TOKEN")
         url = output['file']['url_private']
-        res = requests.get(url, headers={'Authorization': 'Bearer %s' % os.environ.get("SLACK_BOT_TOKEN")})
+        res = requests.get(url, headers={'Authorization': 'Bearer %s' % token})
         res.raise_for_status()
 
-        filename = "temp." + url.split(".")[-1]
+        filename = "watermarked." + url.split(".")[-1]
 
         with open(filename, "wb") as file:
             for chunk in res.iter_content():
@@ -361,6 +363,29 @@ def command_watermark(channel, argument, user, output):
         start_img.paste(overlay_img, position, overlay_img)
 
         start_img.save(filename)
+
+        comment = (mention_user(user) + "\nHere's your picture!"
+                   + " Your uploaded picture will now be deleted.")
+
+        upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
+                              channels=channel, initial_comment=comment)
+        upload_id = upload_response['file']['id']
+        """time.sleep(READ_WEBSOCKET_DELAY)"""
+        print(file_id, flush=True)
+        """slack_client.api_call("files.delete", file=file_id)"""
+        
+        """delete_url = "https://slack.com/api/files.delete"
+        params = {
+            'token': token,
+            'file': file_id
+        }
+        res = requests.get(delete_url, params=params)
+        res.raise_for_status()
+        print(res, flush=True)"""
+        print(upload_id, flush=True)
+        error = slack_client.api_call("files.delete", file=file_id, as_user=True)
+        print(error, flush=True)
+
 
 def new_overlay_size(start, overlay):
     overlay_new_width = int(start.size[0] / 5)
