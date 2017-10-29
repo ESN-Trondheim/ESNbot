@@ -51,7 +51,8 @@ COMMANDS = [
     "reimbursement",
     "esnfarger",
     "esnfont",
-    "standliste"
+    "standliste",
+    "watermark"
     ]
 
 # Instantiate Slack client
@@ -90,15 +91,15 @@ def parse_slack_output(slack_rtm_output):
             if output and 'text' in output and AT_BOT in output['text']:
                 text = output['text'].split(AT_BOT)[1].strip()
                 if output.get('subtype') == "file_comment":
-                    return (text, output['channel'], output['file']['user'])
+                    return (text, output['channel'], output['file']['user'], output)
                 #futureproofing if the bot will ever respond to file comments as a file comment.
                 #or output.get('file').get('user') == BOT_ID
                 #this does not work if 'file' does not exist. 'file' is then None,
                 #and you can't call get() on a NoneType object
                 if output.get('user') == BOT_ID:
-                    return None, None, None #Don't care about the bot's own messages
-                return (text, output['channel'], output['user'])
-    return None, None, None
+                    return None, None, None, None #Don't care about the bot's own messages
+                return (text, output['channel'], output['user'], output)
+    return None, None, None, None
 
 def timestamp():
     """
@@ -120,7 +121,7 @@ def mention_user(user):
     """
     return "<@" + user + ">"
 
-def handle_command(text, channel, user):
+def handle_command(text, channel, user, output):
     """
     Handles a command directed at the bot
 
@@ -150,9 +151,9 @@ def handle_command(text, channel, user):
     else:
         # text.pop(0) # may also use del text[0]
         arguments = text[1:] # I think this is clearer than passing on a modified text array
-        choose_command(command, arguments, channel, user)
+        choose_command(command, arguments, channel, user, output)
 
-def choose_command(command, arguments, channel, user):
+def choose_command(command, arguments, channel, user, output):
     """
     Helper function to choose the command corresponding to the command
     """
@@ -167,11 +168,12 @@ def choose_command(command, arguments, channel, user):
         "help": command_help,
         "ølstraff": command_beer_wine_penalty,
         "vinstraff": command_beer_wine_penalty,
-        "kontaktinfo": command_contact_info
+        "kontaktinfo": command_contact_info,
+        "watermark": command_watermark
     }
     if command in cmds_with_args:
         func = cmds_with_args[command]
-        return func(channel, arguments, user)
+        return func(channel, arguments, user, output)
     func = cmds[command]
     # Can use func = selector.get(command) as well
     return func(channel, user)
@@ -220,12 +222,12 @@ def respond_to(channel, user, message, **kwargs):
         return
     post_message(channel, mention_user(user) + "\n" + message)
 
-def command_help(channel, argument, user):
+def command_help(channel, argument, user, output):
     help_items = {
         "help": "Use `help 'command'` to get help using that command.\n"
                 + "Some examples include:\n"
-                + "•" + AT_BOT + " `help`\n"
-                + "•" + AT_BOT + " `help list`\n"
+                + ">•" + AT_BOT + " `help`\n"
+                + ">•" + AT_BOT + " `help list`\n"
                 + "For a list of all available commands, use  `list`",
         "list": "Displays a list of all available commands.",
         "kontaktinfo": "Use `kontaktinfo 'first name'` to get contact info for `first name`\n"
@@ -237,7 +239,20 @@ def command_help(channel, argument, user):
         "reimbursement": "Displays the link to the reimbursement sheet and the guidelines.",
         "esnfarger": "Displays the official ESN colors along with their hex color code.",
         "esnfont": "Displays the names of the official ESN fonts.",
-        "standliste": "Displays the link to the stand list sheet."
+        "standliste": "Displays the link to the stand list sheet.",
+        "watermark": "Watermarks a given picture.\n"
+                     + "Upload the picture and add a comment when uploading with"
+                     + " the position of the watermark.\n"
+                     + "If no position is entered, the watermark will be in the bottom right.\n"
+                     + "Positions are abbreviated as follows:\n"
+                     + ">•tl = top left\n"
+                     + ">•tr = top right\n"
+                     + ">•bl = bottom left\n"
+                     + ">•br = bottom right\n"
+                     + "*Examples*\n"
+                     + ">" + AT_BOT + " `watermark tr` \n"
+                     + ">" + AT_BOT + " `watermark bl`"
+
     }
     if not argument:
         argument.append("help")
@@ -252,7 +267,7 @@ def command_list(channel, user):
         command_string = command_string + "`" + command + "`\n"
     respond_to(channel, user, "Available commands:\n" + command_string)
 
-def command_contact_info(channel, argument, user):
+def command_contact_info(channel, argument, user, output):
     if not argument:
         respond_to(channel, user, os.environ.get("CONTACT_INFO"))
     else:
@@ -273,7 +288,7 @@ def command_contact_info(channel, argument, user):
         else:
             respond_to(channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
 
-def command_beer_wine_penalty(channel, argument, user):
+def command_beer_wine_penalty(channel, argument, user, output):
     if not argument:
         respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
     else:
@@ -295,7 +310,6 @@ def command_beer_wine_penalty(channel, argument, user):
         else:
             respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
 
-
 def command_reimbursement(channel, user):
     respond_to(channel, user, "Reimbursement form: " + os.environ.get("REIMBURSEMENT_FORM")
                + "\nGuidelines: " + os.environ.get("REIMBURSEMENT_FORM_GUIDELINES"))
@@ -316,6 +330,13 @@ def command_esn_font(channel, user):
 def command_stand_list(channel, user):
     respond_to(channel, user, os.environ.get("STAND_LIST"))
 
+def command_watermark(channel, argument, user, output):
+    if output.get('subtype') != "file_share":
+        watermark = ["watermark"]
+        command_help(channel, watermark, user, output)
+    else:
+        pass
+
 def run():
     """
         Main function
@@ -323,9 +344,9 @@ def run():
     if slack_client.rtm_connect():
         print(timestamp() + "ESNbot connected and running...", flush=True)
         while True:
-            text, channel, user = parse_slack_output(slack_client.rtm_read())
+            text, channel, user, output = parse_slack_output(slack_client.rtm_read())
             if channel:
-                handle_command(text, channel, user)
+                handle_command(text, channel, user, output)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print(timestamp() + "Connection failed.", flush=True)
