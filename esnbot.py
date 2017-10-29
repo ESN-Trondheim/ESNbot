@@ -35,6 +35,8 @@ import time
 from slackclient import SlackClient
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import requests
+from PIL import Image
 
 # esnbot's ID
 BOT_ID = os.environ.get("BOT_ID")
@@ -335,7 +337,45 @@ def command_watermark(channel, argument, user, output):
         watermark = ["watermark"]
         command_help(channel, watermark, user, output)
     else:
-        pass
+        url = output['file']['url_private']
+        res = requests.get(url, headers={'Authorization': 'Bearer %s' % os.environ.get("SLACK_BOT_TOKEN")})
+        res.raise_for_status()
+
+        filename = "temp." + url.split(".")[-1]
+
+        with open(filename, "wb") as file:
+            for chunk in res.iter_content():
+                file.write(chunk)
+
+        start_img = Image.open(filename)
+        overlay_img = Image.open("logo.png")
+
+        overlay_img = overlay_img.resize(new_overlay_size(start_img, overlay_img), Image.ANTIALIAS)
+
+        positions = pos_overlay(start_img, overlay_img)
+        if argument:
+            position = positions.get(argument[0]) or positions['bottom right']
+        else:
+            position = positions['bottom right']
+
+        start_img.paste(overlay_img, position, overlay_img)
+
+        start_img.save(filename)
+
+def new_overlay_size(start, overlay):
+    overlay_new_width = int(start.size[0] / 5)
+    factor = overlay_new_width / overlay.size[0]
+    overlay_new_height = int(overlay.size[1] * factor)
+    return (overlay_new_width, overlay_new_height)
+
+def pos_overlay(start, overlay):
+    position = {
+        'top left': (0, 0),
+        'top right': (start.size[0] - overlay.size[0], 0),
+        'bottom left': (0, start.size[1] - overlay.size[1]),
+        'bottom right': (start.size[0] - overlay.size[0], start.size[1] - overlay.size[1])
+    }
+    return position
 
 def run():
     """
