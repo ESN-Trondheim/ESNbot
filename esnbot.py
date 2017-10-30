@@ -370,21 +370,23 @@ def command_watermark(channel, argument, user, output):
         upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
                               channels=channel, initial_comment=comment)
         upload_id = upload_response['file']['id']
-        """time.sleep(READ_WEBSOCKET_DELAY)"""
-        print(file_id, flush=True)
-        """slack_client.api_call("files.delete", file=file_id)"""
+        #"""time.sleep(READ_WEBSOCKET_DELAY)"""
+        #print(file_id, flush=True)
+        #"""slack_client.api_call("files.delete", file=file_id)"""
         
-        """delete_url = "https://slack.com/api/files.delete"
+        #this is hacky, and not the intended way to use these tokens, but it works
+        delete_url = "https://slack.com/api/files.delete"
         params = {
-            'token': token,
+            'token': os.environ.get("BULKDELETER_TOKEN"),
             'file': file_id
         }
         res = requests.get(delete_url, params=params)
         res.raise_for_status()
-        print(res, flush=True)"""
-        print(upload_id, flush=True)
-        error = slack_client.api_call("files.delete", file=file_id, as_user=True)
-        print(error, flush=True)
+        os.remove(filename)
+        #print(res, flush=True)
+        #print(upload_id, flush=True)
+        #error = slack_client.api_call("files.delete", file=file_id)
+        #print(error, flush=True)
 
 
 def new_overlay_size(start, overlay):
