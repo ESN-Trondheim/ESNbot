@@ -22,6 +22,7 @@
     Then all information about a message is available to the bot.
     This is useful for e.g. files to be processed (watermarks etc).
     -oauth2client is deprecated, consider updating to another package. See github for info.
+    -make watermark.py and move all relevant code there. will clean up readability
     -BUG: if you comment with @ESNbot on an uploaded file, the bot will crash.
     This is because it looks up who the user was,
     but this message doesn't have a user key in the dict.
