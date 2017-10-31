@@ -28,6 +28,8 @@
     but this message doesn't have a user key in the dict.
     This is somewhat fixed. The bot will not crash, but it will respond to the channel
     instead of as a new comment in the thread.
+    -the bot will crash if you use the watermark command with something else than an image file.
+    need to check that the file is in fact an image, and just display an error message if it isn't.
 """
 
 import os
