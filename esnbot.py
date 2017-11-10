@@ -246,7 +246,7 @@ def command_help(channel, argument, user, output):
         "esnfont": "Displays the names of the official ESN fonts.",
         "standliste": "Displays the link to the stand list sheet.",
         "watermark": "Watermarks a given picture.\n"
-                     + "Upload the picture and add a comment when uploading with"
+                     + "Upload the picture and add a comment *when uploading* with"
                      + " the position of the watermark.\n"
                      + "If no position is entered, the watermark will be in the bottom right.\n"
                      + "Positions are abbreviated as follows:\n"
