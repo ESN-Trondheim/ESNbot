@@ -360,9 +360,9 @@ def command_watermark(channel, argument, user, output):
 
         positions = pos_overlay(start_img, overlay_img)
         if argument:
-            position = positions.get(argument[0]) or positions['bottom right']
+            position = positions.get(argument[0]) or positions['br']
         else:
-            position = positions['bottom right']
+            position = positions['br']
 
         start_img.paste(overlay_img, position, overlay_img)
 
