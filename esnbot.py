@@ -23,6 +23,7 @@
     This is useful for e.g. files to be processed (watermarks etc).
     -oauth2client is deprecated, consider updating to another package. See github for info.
     -make watermark.py and move all relevant code there. will clean up readability
+    -crop coverphotos til riktig størrelse
     -BUG: if you comment with @ESNbot on an uploaded file, the bot will crash.
     This is because it looks up who the user was,
     but this message doesn't have a user key in the dict.
@@ -372,7 +373,8 @@ def command_watermark(channel, argument, user, output):
 
         upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
                               channels=channel, initial_comment=comment)
-        upload_id = upload_response['file']['id']
+        #upload_id is meant for later use, to be able to delete the uploaded picture.
+        #upload_id = upload_response['file']['id']
         #"""time.sleep(READ_WEBSOCKET_DELAY)"""
         #print(file_id, flush=True)
         #"""slack_client.api_call("files.delete", file=file_id)"""
@@ -400,10 +402,10 @@ def new_overlay_size(start, overlay):
 
 def pos_overlay(start, overlay):
     position = {
-        'top left': (0, 0),
-        'top right': (start.size[0] - overlay.size[0], 0),
-        'bottom left': (0, start.size[1] - overlay.size[1]),
-        'bottom right': (start.size[0] - overlay.size[0], start.size[1] - overlay.size[1])
+        'tl': (0, 0),
+        'tr': (start.size[0] - overlay.size[0], 0),
+        'bl': (0, start.size[1] - overlay.size[1]),
+        'br': (start.size[0] - overlay.size[0], start.size[1] - overlay.size[1])
     }
     return position
 
