@@ -338,8 +338,8 @@ def command_stand_list(channel, user):
 
 def command_watermark(channel, argument, user, output):
     if output.get('subtype') != "file_share":
-        watermark = ["watermark"]
-        command_help(channel, watermark, user, output)
+        watermark = ["watermark"] # command_help expects an array containing the help item
+        command_help(channel, watermark, user, output) # displays help for watermark if watermark is not called from a file upload
     else:
         file_id = output['file']['id']
         token = os.environ.get("SLACK_BOT_TOKEN")
@@ -360,9 +360,9 @@ def command_watermark(channel, argument, user, output):
 
         positions = pos_overlay(start_img, overlay_img)
         if argument:
-            position = positions.get(argument[0]) or positions['br']
+            position = positions.get(argument[0]) or positions['br'] #bottom right is default
         else:
-            position = positions['br']
+            position = positions['br'] #bottom right is default
 
         start_img.paste(overlay_img, position, overlay_img)
 
@@ -372,13 +372,13 @@ def command_watermark(channel, argument, user, output):
                    + " Your uploaded picture will now be deleted.")
 
         upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
-                              channels=channel, initial_comment=comment)
+                                                channels=channel, initial_comment=comment)
         #upload_id is meant for later use, to be able to delete the uploaded picture.
         #upload_id = upload_response['file']['id']
         #"""time.sleep(READ_WEBSOCKET_DELAY)"""
         #print(file_id, flush=True)
         #"""slack_client.api_call("files.delete", file=file_id)"""
-        
+
         #this is hacky, and not the intended way to use these tokens, but it works
         delete_url = "https://slack.com/api/files.delete"
         params = {
