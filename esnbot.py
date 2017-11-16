@@ -217,17 +217,20 @@ def command_help(channel, argument, user, output):
         "standliste": "Displays the link to the stand list sheet.",
         "watermark": "Watermarks a given picture.\n"
                      + "Upload the picture and add a comment *when uploading* with"
-                     + " the position of the watermark.\n"
+                     + " the position and color of the watermark.\n"
+                     + "If no color is entered, the watermark will be in full colors.\n"
+                     + "Valid colors are `color`, `black` and `white`.\n"
                      + "If no position is entered, the watermark will be in the bottom right.\n"
                      + "Positions are abbreviated as follows:\n"
-                     + ">•tl = top left\n"
-                     + ">•tr = top right\n"
-                     + ">•bl = bottom left\n"
-                     + ">•br = bottom right\n"
+                     + ">•`tl` = top left\n"
+                     + ">•`tr` = top right\n"
+                     + ">•`bl` = bottom left\n"
+                     + ">•`br` = bottom right\n"
                      + "*Examples*\n"
-                     + ">" + AT_BOT + " `watermark tr` \n"
-                     + ">" + AT_BOT + " `watermark bl`"
-
+                     + ">" + AT_BOT + " `watermark` \n"
+                     + ">" + AT_BOT + " `watermark bl`\n"
+                     + ">" + AT_BOT + " `watermark white tl`\n"
+                     + ">" + AT_BOT + " `watermark tr black`\n"
     }
     if not argument:
         argument.append("help")
