@@ -1,36 +1,5 @@
 """
     A slack bot to help ESN Trondheim
-
-    TODO:
-    -Maybe have the bot answer commands in a thread? May be trouble if sending the bot a PM
-    -beer-wine-penalty should actually be two commands, one should display the rules
-    and a link to the rules, the second should display the current standings.
-    This info should be pulled from a google spreadsheet which contains the relevant information.
-    (sort of done, may now use the command followed by a name to get standings)
-    -Add option to delete all messages except admin messages in a channel
-    -Add support for adding simple commands via a .json or similar.
-    This is meant for commands that simply respond with a predefined response.
-    -The standlist command should display info for that person if name is supplied as an argument
-    -If the bot is tagged in a thread, it should respond in that same thread.
-    May use a kwarg to specify that it is a thread
-    -Ølstraff/vinstraff should be able to post the full standings
-    (or perhaps only the ones with penalties)
-    -watermarking of pictures
-    -making cover photos for facebook events
-    -To make it easier to process different kind of commands,
-    output itself should also be returned in parse_slack_output().
-    Then all information about a message is available to the bot.
-    This is useful for e.g. files to be processed (watermarks etc).
-    -oauth2client is deprecated, consider updating to another package. See github for info.
-    -make watermark.py and move all relevant code there. will clean up readability
-    -crop coverphotos til riktig størrelse
-    -BUG: if you comment with @ESNbot on an uploaded file, the bot will crash.
-    This is because it looks up who the user was,
-    but this message doesn't have a user key in the dict.
-    This is somewhat fixed. The bot will not crash, but it will respond to the channel
-    instead of as a new comment in the thread.
-    -the bot will crash if you use the watermark command with something else than an image file.
-    need to check that the file is in fact an image, and just display an error message if it isn't.
 """
 
 import os
@@ -338,61 +307,106 @@ def command_stand_list(channel, user):
 
 def command_watermark(channel, argument, user, output):
     if output.get('subtype') != "file_share":
-        watermark = ["watermark"] # command_help expects an array containing the help item
-        command_help(channel, watermark, user, output) # displays help for watermark if watermark is not called from a file upload
+        # command_help expects an array containing the help item
+        # Displays help for watermark if watermark is not called from a file upload
+        command_help(channel, ["watermark"], user, output)
     else:
-        file_id = output['file']['id']
-        token = os.environ.get("SLACK_BOT_TOKEN")
-        url = output['file']['url_private']
-        res = requests.get(url, headers={'Authorization': 'Bearer %s' % token})
-        res.raise_for_status()
+        original_file_id = output['file']['id']
+        original_file_url = output['file']['url_private']
+        filename = "watermarked." + original_file_url.split(".")[-1]
+        download_file(filename, original_file_url)
 
-        filename = "watermarked." + url.split(".")[-1]
-
-        with open(filename, "wb") as file:
-            for chunk in res.iter_content():
-                file.write(chunk)
-
-        start_img = Image.open(filename)
-        overlay_img = Image.open("logo.png")
-
+        try:
+            start_img = Image.open(filename)
+        except OSError:
+            respond_to(channel, user, "That is not a valid image format.\nSee "
+                       + "http://pillow.readthedocs.io/en/3.4.x/handbook/image-file-formats.html"
+                       + " for a full list of supported file formats.")
+            os.remove(filename)
+            return
+        overlay_img = Image.open("logo-" + get_overlay_color(argument) + ".png")
         overlay_img = overlay_img.resize(new_overlay_size(start_img, overlay_img), Image.ANTIALIAS)
 
-        positions = pos_overlay(start_img, overlay_img)
-        if argument:
+        valid_positions = pos_overlay(start_img, overlay_img)
+        selected_position = valid_positions.get(get_overlay_position(argument))
+
+        """if argument:
             position = positions.get(argument[0]) or positions['br'] #bottom right is default
         else:
-            position = positions['br'] #bottom right is default
+            position = positions['br'] #bottom right is default"""
 
-        start_img.paste(overlay_img, position, overlay_img)
-
+        start_img.paste(overlay_img, selected_position, overlay_img)
         start_img.save(filename)
 
         comment = (mention_user(user) + "\nHere's your picture!"
                    + " Your uploaded picture will now be deleted.")
-
         upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
                                                 channels=channel, initial_comment=comment)
-        #upload_id is meant for later use, to be able to delete the uploaded picture.
-        #upload_id = upload_response['file']['id']
+        # upload_id is meant for later use, to be able to delete the uploaded picture.
+        # upload_id = upload_response['file']['id']
+
         #"""time.sleep(READ_WEBSOCKET_DELAY)"""
         #print(file_id, flush=True)
         #"""slack_client.api_call("files.delete", file=file_id)"""
 
-        #this is hacky, and not the intended way to use these tokens, but it works
-        delete_url = "https://slack.com/api/files.delete"
-        params = {
-            'token': os.environ.get("BULKDELETER_TOKEN"),
-            'file': file_id
-        }
-        res = requests.get(delete_url, params=params)
-        res.raise_for_status()
+        # this is hacky, and not the intended way to use these tokens, but it works
+        # Deletes file from Slack
+        delete_file(original_file_id)
+        # Deletes file from system
         os.remove(filename)
-        #print(res, flush=True)
-        #print(upload_id, flush=True)
-        #error = slack_client.api_call("files.delete", file=file_id)
-        #print(error, flush=True)
 
+def delete_file(file_id):
+    """
+    Deletes `file_id` from Slack.
+    """
+    delete_url = "https://slack.com/api/files.delete"
+    params = {
+        'token': os.environ.get("BULKDELETER_TOKEN"),
+        'file': file_id
+    }
+    res = requests.get(delete_url, params=params)
+    res.raise_for_status()
+
+def download_file(filename, url):
+    """
+    Downloads a file from Slack from the given `url`.
+    Then saves the files to system as `filename` in the directory the bot is being run from.
+    """
+    token = os.environ.get("SLACK_BOT_TOKEN")
+    res = requests.get(url, headers={'Authorization': 'Bearer %s' % token})
+    res.raise_for_status()
+
+    with open(filename, "wb") as file:
+        for chunk in res.iter_content():
+            file.write(chunk)
+
+def get_overlay_color(argument):
+    """
+    Determines the color the user wants the overlay to be.
+    Returns a string containing said color.
+    Returns an "color" if no valid color can be found in `argument`.
+    """
+    if argument:
+        if "black" in argument:
+            return "black"
+        elif "white" in argument:
+            return "white"
+    return "color"
+
+def get_overlay_position(argument):
+    """
+    Determines the position the user wants the overlay to be in.
+    Returns a string containing the shorthand version of the four valied positions.
+    Returns "br" if no valid position can be found in `argument`.
+    """
+    if argument:
+        if "tl" in argument:
+            return "tl"
+        elif "tr" in argument:
+            return "tr"
+        elif "bl" in argument:
+            return "bl"
+    return "br"
 
 def new_overlay_size(start, overlay):
     overlay_new_width = int(start.size[0] / 5)
