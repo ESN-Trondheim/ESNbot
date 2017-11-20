@@ -11,6 +11,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 import requests
 from PIL import Image
 
+import watermark as wm
+
 # esnbot's ID
 BOT_ID = os.environ.get("BOT_ID")
 
@@ -327,11 +329,11 @@ def command_watermark(channel, argument, user, output):
                        + " for a full list of supported file formats.")
             os.remove(filename)
             return
-        overlay_img = Image.open("logo-" + get_overlay_color(argument) + ".png")
-        overlay_img = overlay_img.resize(new_overlay_size(start_img, overlay_img), Image.ANTIALIAS)
+        overlay_img = Image.open("logo-" + wm.get_overlay_color(argument) + ".png")
+        overlay_img = overlay_img.resize(wm.new_overlay_size(start_img, overlay_img), Image.ANTIALIAS)
 
-        valid_positions = pos_overlay(start_img, overlay_img)
-        selected_position = valid_positions.get(get_overlay_position(argument))
+        valid_positions = wm.valid_overlay_positions(start_img, overlay_img)
+        selected_position = valid_positions.get(wm.get_overlay_position(argument))
 
         """if argument:
             position = positions.get(argument[0]) or positions['br'] #bottom right is default
@@ -382,49 +384,6 @@ def download_file(filename, url):
     with open(filename, "wb") as file:
         for chunk in res.iter_content():
             file.write(chunk)
-
-def get_overlay_color(argument):
-    """
-    Determines the color the user wants the overlay to be.
-    Returns a string containing said color.
-    Returns an "color" if no valid color can be found in `argument`.
-    """
-    if argument:
-        if "black" in argument:
-            return "black"
-        elif "white" in argument:
-            return "white"
-    return "color"
-
-def get_overlay_position(argument):
-    """
-    Determines the position the user wants the overlay to be in.
-    Returns a string containing the shorthand version of the four valied positions.
-    Returns "br" if no valid position can be found in `argument`.
-    """
-    if argument:
-        if "tl" in argument:
-            return "tl"
-        elif "tr" in argument:
-            return "tr"
-        elif "bl" in argument:
-            return "bl"
-    return "br"
-
-def new_overlay_size(start, overlay):
-    overlay_new_width = int(start.size[0] / 5)
-    factor = overlay_new_width / overlay.size[0]
-    overlay_new_height = int(overlay.size[1] * factor)
-    return (overlay_new_width, overlay_new_height)
-
-def pos_overlay(start, overlay):
-    position = {
-        'tl': (0, 0),
-        'tr': (start.size[0] - overlay.size[0], 0),
-        'bl': (0, start.size[1] - overlay.size[1]),
-        'br': (start.size[0] - overlay.size[0], start.size[1] - overlay.size[1])
-    }
-    return position
 
 def run():
     """
