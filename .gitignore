@@ -3,3 +3,4 @@ drivecredentials.json
 notes.txt
 *.jpg
 *.png
+__pycache__
