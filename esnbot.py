@@ -311,13 +311,14 @@ def command_stand_list(channel, user):
     respond_to(channel, user, os.environ.get("STAND_LIST"))
 
 def command_watermark(channel, argument, user, output):
-    if output.get('subtype') != "file_share":
-        # command_help expects an array containing the help item
-        # Displays help for watermark if watermark is not called from a file upload
-        command_help(channel, ["watermark"], user, output)
-    else:
-        original_file_id = output['file']['id']
-        original_file_url = output['file']['url_private']
+    #if output.get('subtype') != "file_share":
+    #    # command_help expects an array containing the help item
+    #    # Displays help for watermark if watermark is not called from a file upload
+    #    command_help(channel, ["watermark"], user, output)
+    #else:
+    if output.get('files'):
+        original_file_id = output['files'][0]['id']
+        original_file_url = output['files'][0]['url_private']
         filename = "watermarked." + original_file_url.split(".")[-1]
         download_file(filename, original_file_url)
 
@@ -359,6 +360,10 @@ def command_watermark(channel, argument, user, output):
         delete_file(original_file_id)
         # Deletes file from system
         os.remove(filename)
+    else:
+        # command_help expects an array containing the help item
+        # Displays help for watermark if watermark is not called from a file upload
+        command_help(channel, ["watermark"], user, output)
 
 def delete_file(file_id):
     """
