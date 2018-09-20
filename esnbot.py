@@ -366,7 +366,7 @@ def delete_file(file_id):
     """
     delete_url = "https://slack.com/api/files.delete"
     params = {
-        'token': os.environ.get("BULKDELETER_TOKEN"),
+        'token': os.environ.get("APP_TOKEN"),
         'file': file_id
     }
     res = requests.get(delete_url, params=params)
