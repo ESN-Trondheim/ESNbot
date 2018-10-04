@@ -65,6 +65,8 @@ def parse_slack_output(slack_rtm_output):
                     and output['type'] != 'presence_change'):
                 # maybe make this filter out ephemeral messages as well, like google drive messages
                 print(timestamp() + str(output) + "\n", flush=True)
+            if (output['type'] == 'goodbye'):
+                slack_client.rtm_connect()
             if output and 'text' in output and AT_BOT in output['text']:
                 text = output['text'].split(AT_BOT)[1].strip()
                 if output.get('subtype') == "file_comment":
