@@ -401,7 +401,7 @@ def run():
     """
         Main function
     """
-    if slack_client.rtm_connect():
+    if slack_client.rtm_connect(auto_reconnect=True):
         print(timestamp() + "ESNbot connected and running...", flush=True)
         while True:
             text, channel, user, output = parse_slack_output(slack_client.rtm_read())
