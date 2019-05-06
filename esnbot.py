@@ -70,7 +70,7 @@ def parse_slack_output(slack_rtm_output):
             if (output['type'] == 'goodbye'):
                 print(timestamp() + "Session ended.", flush=True)
                 print(timestamp() + "Initiating new session...", flush=True)
-                if slack_client.rtm_connect():
+                if slack_client.rtm_connect(auto_reconnect=True):
                     print(timestamp() + "ESNbot reconnected and running...", flush=True)
                 else:
                     print(timestamp() + "Reconnection failed.", flush=True)
@@ -397,7 +397,15 @@ def run():
     if slack_client.rtm_connect(auto_reconnect=True):
         print(timestamp() + "ESNbot connected and running...", flush=True)
         while True:
-            text, channel, user, output = parse_slack_output(slack_client.rtm_read())
+            try:
+                text, channel, user, output = parse_slack_output(slack_client.rtm_read())
+            except TimeoutError:
+                print(timestamp() + "Session timed out [TimeoutError].", flush=True)
+                print(timestamp() + "Initiating new session...", flush=True)
+                if slack_client.rtm_connect(auto_reconnect=True):
+                    print(timestamp() + "ESNbot reconnected and running...", flush=True)
+                else:
+                    print(timestamp() + "Reconnection failed.", flush=True)
             if channel:
                 handle_command(text, channel, user, output)
             time.sleep(READ_WEBSOCKET_DELAY)
