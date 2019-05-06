@@ -258,7 +258,6 @@ def command_contact_info(channel, argument, user, output):
     if not argument:
         respond_to(channel, user, os.environ.get("CONTACT_INFO"))
     else:
-        #global GSHEET
         gsheet = gspread.authorize(CREDENTIALS)
         contact_info_sheet = gsheet.open_by_key(os.environ.get("CONTACT_INFO_KEY")).sheet1
         print(timestamp() + "Contact info sheet opened...", flush=True)
@@ -280,7 +279,6 @@ def command_beer_wine_penalty(channel, argument, user, output):
         respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
     else:
         # possibly add in a try statement here
-        #global GSHEET
         gsheet = gspread.authorize(CREDENTIALS)
         beer_wine_sheet = gsheet.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
         print(timestamp() + "Beer/wine-sheet opened...", flush=True)
@@ -324,32 +322,25 @@ def command_watermark(channel, argument, user, output):
     #    command_help(channel, ["watermark"], user, output)
     #else:
     if output.get('files'):
+        respond_to(channel, user, "I'll get right on it! Your picture(s) will be ready in a jiffy!")
+
         original_file_id = output['files'][0]['id']
         original_file_url = output['files'][0]['url_private']
         filename = "watermarked." + original_file_url.split(".")[-1]
         download_file(filename, original_file_url)
 
         try:
-            start_img = Image.open(filename)
+            start_img = wm.Image.open(filename)
         except OSError:
             respond_to(channel, user, "That is not a valid image format.\nSee "
-                       + "http://pillow.readthedocs.io/en/3.4.x/handbook/image-file-formats.html"
+                       + "https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html"
                        + " for a full list of supported file formats.")
             os.remove(filename)
+            delete_file(original_file_id)
             return
-        overlay_img = Image.open("logo-" + wm.get_overlay_color(argument) + ".png")
-        overlay_img = overlay_img.resize(wm.new_overlay_size(start_img, overlay_img), Image.ANTIALIAS)
+        
+        wm.watermark(start_img, argument, filename)
 
-        valid_positions = wm.valid_overlay_positions(start_img, overlay_img)
-        selected_position = valid_positions.get(wm.get_overlay_position(argument))
-
-        """if argument:
-            position = positions.get(argument[0]) or positions['br'] #bottom right is default
-        else:
-            position = positions['br'] #bottom right is default"""
-
-        start_img.paste(overlay_img, selected_position, overlay_img)
-        start_img.save(filename)
 
         comment = (mention_user(user) + "\nHere's your picture!"
                    + " Your uploaded picture will now be deleted.")

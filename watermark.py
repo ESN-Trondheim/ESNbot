@@ -2,6 +2,8 @@
 A set of functions to help command_watermark()
 """
 
+from PIL import Image
+
 def get_overlay_color(argument):
     """
     Determines the color the user wants the watermark overlay to be.
@@ -56,3 +58,23 @@ def valid_overlay_positions(start, overlay):
         'br': (start.size[0] - overlay.size[0], start.size[1] - overlay.size[1])
     }
     return position
+
+def watermark(start_img, argument, filename):
+    """
+    Watermarks `start_img` with the logo and position specified in `argument`, if any is specified.
+    Default is colors and bottom left corner.
+    Then saves the resulting image to `filename` in the same folder the script runs from.
+    """
+    overlay_img = Image.open("logo-" + get_overlay_color(argument) + ".png")
+    overlay_img = overlay_img.resize(new_overlay_size(start_img, overlay_img), Image.ANTIALIAS)
+
+    valid_positions = valid_overlay_positions(start_img, overlay_img)
+    selected_position = valid_positions.get(get_overlay_position(argument))
+
+    """if argument:
+        position = positions.get(argument[0]) or positions['br'] #bottom right is default
+    else:
+        position = positions['br'] #bottom right is default"""
+
+    start_img.paste(overlay_img, selected_position, overlay_img)
+    start_img.save(filename)
