@@ -120,7 +120,7 @@ def handle_command(text, channel, user, output):
     Nothing
     """
     if not text:
-        respond_to(channel, user, "You tagged me!")
+        respond_to(channel, user, "You tagged me! Try " + AT_BOT + " `list` to get started.")
         return
 
     text = text.split()
