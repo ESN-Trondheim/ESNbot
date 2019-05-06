@@ -89,7 +89,13 @@ def compress(filename, path):
     with zipfile.ZipFile(filename, mode="w") as my_zip_file:
         for root, dirs, files in os.walk(path):
             for file in files:
-                my_zip_file.write(os.path.join(root, file))
+                # To compress the images exactly as received, instead of adding all pictures to
+                # path(watermarked_images). Not necessary to add an extra folder.
+                # Now it will be saved as watermarked/files
+                # instead of watermarked/watermarked_images/files
+                arcname = os.path.join(root, file).replace(path + "\\", "")
+                print(arcname, flush=True)
+                my_zip_file.write(os.path.join(root, file), arcname=arcname)
 
 def watermark_folder(argument, path):
     supported_files = True
@@ -102,7 +108,7 @@ def watermark_folder(argument, path):
                 os.remove(os.path.join(root, file))
                 supported_files = False
                 continue
-            print(os.path.join(root, file), flush=True)
+            # print(os.path.join(root, file), flush=True)
             watermark(img, argument, os.path.join(root, file))
     return supported_files
 
@@ -117,7 +123,8 @@ def watermark_zip(argument, filename):
     return supported_files
 
 def delete_directory(path):
-    for root, dirs, files in os.walk(path):
+    for root, dirs, files in os.walk(path, topdown=False):
+        # topdown=False is necessary to delete files/folders in the proper order.
         for file in files:
             os.remove(os.path.join(root, file))
         for dir_name in dirs:
