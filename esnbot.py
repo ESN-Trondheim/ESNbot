@@ -9,7 +9,7 @@ from slackclient import SlackClient
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
-from PIL import Image
+import zipfile
 
 import watermark as wm
 
@@ -62,6 +62,8 @@ def parse_slack_output(slack_rtm_output):
         for output in output_list:
             if (output['type'] != 'desktop_notification'
                     and output['type'] != 'reconnect_url'
+                    and output['type'] != 'dnd_updated_user'
+                    and output['type'] != 'user_change'
                     and output['type'] != 'presence_change'):
                 # maybe make this filter out ephemeral messages as well, like google drive messages
                 print(timestamp() + str(output) + "\n", flush=True)
