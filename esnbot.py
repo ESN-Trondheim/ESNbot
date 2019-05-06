@@ -9,8 +9,6 @@ from slackclient import SlackClient
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
-import zipfile
-
 import watermark as wm
 
 # esnbot's ID
@@ -67,7 +65,7 @@ def parse_slack_output(slack_rtm_output):
                     and output['type'] != 'presence_change'):
                 # maybe make this filter out ephemeral messages as well, like google drive messages
                 print(timestamp() + str(output) + "\n", flush=True)
-            if (output['type'] == 'goodbye'):
+            if output['type'] == 'goodbye':
                 print(timestamp() + "Session ended.", flush=True)
                 print(timestamp() + "Initiating new session...", flush=True)
                 if slack_client.rtm_connect(auto_reconnect=True):
@@ -324,28 +322,37 @@ def command_watermark(channel, argument, user, output):
     #    command_help(channel, ["watermark"], user, output)
     #else:
     if output.get('files'):
+        not_valid_format = ("See "
+                            + "https://pillow.readthedocs.io/en/stable/"
+                            + "handbook/image-file-formats.html"
+                            + " for a full list of supported file formats.")
         respond_to(channel, user, "I'll get right on it! Your picture(s) will be ready in a jiffy!")
 
         original_file_id = output['files'][0]['id']
         original_file_url = output['files'][0]['url_private']
-        filename = "watermarked." + original_file_url.split(".")[-1]
+        ext = original_file_url.split(".")[-1]
+        filename = "watermarked." + ext
         download_file(filename, original_file_url)
 
-        try:
-            start_img = wm.Image.open(filename)
-        except OSError:
-            respond_to(channel, user, "That is not a valid image format.\nSee "
-                       + "https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html"
-                       + " for a full list of supported file formats.")
-            os.remove(filename)
-            delete_file(original_file_id)
-            return
-        
-        wm.watermark(start_img, argument, filename)
+        if ext == "zip":
+            supported_formats = wm.watermark_zip(argument, filename)
+        else:
+            try:
+                start_img = wm.Image.open(filename)
+            except OSError:
+                respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
+                os.remove(filename)
+                delete_file(original_file_id)
+                return
+            wm.watermark(start_img, argument, filename)
 
-
-        comment = (mention_user(user) + "\nHere's your picture!"
-                   + " Your uploaded picture will now be deleted.")
+        unsupported_formats = "" if supported_formats else ("\nI couldn't open "
+                                                            + "some of the files you sent me, "
+                                                            + "probably because they "
+                                                            + "were in a format I can't read.\n"
+                                                            + not_valid_format)
+        comment = (mention_user(user) + "\nHere's your picture(s)!"
+                   + " Your uploaded picture(s) will now be deleted." + unsupported_formats)
         upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
                                                 channels=channel, initial_comment=comment)
         # upload_id is meant for later use, to be able to delete the uploaded picture.

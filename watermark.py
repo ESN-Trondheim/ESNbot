@@ -2,6 +2,8 @@
 A set of functions to help command_watermark()
 """
 
+import zipfile
+import os
 from PIL import Image
 
 def get_overlay_color(argument):
@@ -78,3 +80,47 @@ def watermark(start_img, argument, filename):
 
     start_img.paste(overlay_img, selected_position, overlay_img)
     start_img.save(filename)
+
+def extract(filename, path):
+    with zipfile.ZipFile(filename) as myfile:
+        myfile.extractall(path=path)
+
+def compress(filename, path):
+    with zipfile.ZipFile(filename, mode="w") as my_zip_file:
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                my_zip_file.write(os.path.join(root, file))
+
+def watermark_folder(argument, path):
+    supported_files = True
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            try:
+                img = Image.open(os.path.join(root, file))
+            except OSError:
+                print("Could not open " + os.path.join(root, file), flush=True)
+                os.remove(os.path.join(root, file))
+                supported_files = False
+                continue
+            print(os.path.join(root, file), flush=True)
+            watermark(img, argument, os.path.join(root, file))
+    return supported_files
+
+def watermark_zip(argument, filename):
+    path = "watermarked_images"
+    extract(filename, path)
+    os.remove(filename)
+    print("Images extracted", flush=True)
+    supported_files = watermark_folder(argument, path)
+    compress(filename, path)
+    delete_directory(path)
+    return supported_files
+
+def delete_directory(path):
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            os.remove(os.path.join(root, file))
+        for dir_name in dirs:
+            os.rmdir(os.path.join(root, dir_name))
+    os.rmdir(path)
+    # shutil.rmtree(path) # This may actually be a lot better
