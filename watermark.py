@@ -93,6 +93,8 @@ def compress(filename, path):
                 # path(watermarked_images). Not necessary to add an extra folder.
                 # Now it will be saved as watermarked/files
                 # instead of watermarked/watermarked_images/files
+                # This only works on Windows systems, not Linux.
+                # Forward slash is used as separator instead of backslash on Linux
                 arcname = os.path.join(root, file).replace(path + "\\", "")
                 print(arcname, flush=True)
                 my_zip_file.write(os.path.join(root, file), arcname=arcname)

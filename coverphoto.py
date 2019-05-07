@@ -79,7 +79,8 @@ def get_title(argument):
     subtitle2 = ""
     if argument:
         argument = " ".join(argument)
-        titles = argument.split("\"")
+        titles = argument.split("\" \"")
+        print(titles)
         while True:
             try:
                 titles.remove(" ")
