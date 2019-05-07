@@ -250,7 +250,7 @@ def command_help(channel, argument, user, output):
                       + "You may enter up to two subtitles.\n"
                       + "If no color is entered, the cover photo will be blue.\n"
                       + "Valid colors are `cyan`, `magenta`, `green`, `orange`,"
-                      + "`blue` and `all`. `all` will return a zipped file "
+                      + "`blue`" # and `all`. `all` will return a zipped file "
                       + "containing all five color variants.\n"
                       + "For best results, the image should be 1568*588 or larger.\n"
                       + "If the image is larger, it will be cropped to around the center "
