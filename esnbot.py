@@ -394,7 +394,8 @@ def command_watermark(channel, argument, user, output):
         command_help(channel, ["watermark"], user, output)
 
 def command_make_cover_photo(channel, argument, user, output):
-    print("Arguments supplied by user: " + argument, flush=True)
+    print("Arguments supplied by user: ", flush=True)
+    print(argument)
     if output.get('files'):
         not_valid_format = ("See "
                             + "https://pillow.readthedocs.io/en/stable/"
