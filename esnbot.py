@@ -394,6 +394,7 @@ def command_watermark(channel, argument, user, output):
         command_help(channel, ["watermark"], user, output)
 
 def command_make_cover_photo(channel, argument, user, output):
+    print("Arguments supplied by user: " + argument, flush=True)
     if output.get('files'):
         not_valid_format = ("See "
                             + "https://pillow.readthedocs.io/en/stable/"
@@ -429,8 +430,7 @@ def command_make_cover_photo(channel, argument, user, output):
         os.remove(filename)
     else:
         # command_help expects an array containing the help item
-        # Displays help for watermark if watermark is not called from a file upload
-        print(argument, flush=True)
+        # Displays help for coverphoto if coverphoto is not called from a file upload
         command_help(channel, ["coverphoto"], user, output)
 
 def delete_file(file_id):
