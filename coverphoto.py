@@ -30,7 +30,6 @@ ESN_COLORS = {
 DIMENSIONS = (1568, 588)
 ASPECT_RATIO = DIMENSIONS[0] / DIMENSIONS[1]
 OVERLAY_LOGOS = Image.open("logos_overlay.png")
-BACKGROUND = "bg.jpg"
 DEFAULT_BACKGROUND = "default_background.png"
 TITLE_FONT = ImageFont.truetype("Kelson Sans Bold.otf", 90)
 SUBTITLE_FONT = ImageFont.truetype("Kelson Sans Bold.otf", 50)
