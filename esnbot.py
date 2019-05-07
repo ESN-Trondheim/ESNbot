@@ -10,6 +10,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
 import watermark as wm
+import coverphoto
 
 # esnbot's ID
 BOT_ID = os.environ.get("BOT_ID")
@@ -27,7 +28,8 @@ COMMANDS = [
     "esnfarger",
     "esnfont",
     "standliste",
-    "watermark"
+    "watermark",
+    "coverphoto"
     ]
 
 # Instantiate Slack client
@@ -153,7 +155,8 @@ def choose_command(command, arguments, channel, user, output):
         "ølstraff": command_beer_wine_penalty,
         "vinstraff": command_beer_wine_penalty,
         "kontaktinfo": command_contact_info,
-        "watermark": command_watermark
+        "watermark": command_watermark,
+        "coverphoto": command_make_cover_photo
     }
     if command in cmds_with_args:
         func = cmds_with_args[command]
@@ -239,7 +242,25 @@ def command_help(channel, argument, user, output):
                      + ">" + AT_BOT + " `watermark` \n"
                      + ">" + AT_BOT + " `watermark bl`\n"
                      + ">" + AT_BOT + " `watermark white tl`\n"
-                     + ">" + AT_BOT + " `watermark tr black`\n"
+                     + ">" + AT_BOT + " `watermark tr black`\n",
+        "coverphoto": "Creates a cover photo for Facebook from the uploaded picture.\n"
+                      + "Upload the picture and add a comment *when uploading* with"
+                      + " the color of the overlay, the title and optionally subtitle(s).\n"
+                      + "Title and subtitles have to be enclosed in quatotion marks (\")\n"
+                      + "You may enter up to two subtitles.\n"
+                      + "If no color is entered, the cover photo will be blue.\n"
+                      + "Valid colors are `cyan`, `magenta`, `green`, `orange`,"
+                      + "`blue` and `all`. `all` will return a zipped file "
+                      + "containing all five color variants.\n"
+                      + "For best results, the image should be 1568*588 or larger.\n"
+                      + "If the image is larger, it will be cropped to around the center "
+                      + "to fit the dimensions.\n"
+                      + "If the image is smaller, it will be upscaled and cropped around the "
+                      + "center to fit the dimensions.\n"
+                      + "*Examples*\n"
+                      + ">" + AT_BOT + " `coverphoto \"Title\"`\n"
+                      + ">" + AT_BOT + " `coverphoto blue \"Title\" \"Subtitle\"`\n"
+                      + ">" + AT_BOT + " `coverphoto all \"Title\" \"Subtitle\" \"Subtitle2\"`\n"
     }
     if not argument:
         argument.append("help")
@@ -371,6 +392,46 @@ def command_watermark(channel, argument, user, output):
         # command_help expects an array containing the help item
         # Displays help for watermark if watermark is not called from a file upload
         command_help(channel, ["watermark"], user, output)
+
+def command_make_cover_photo(channel, argument, user, output):
+    if output.get('files'):
+        not_valid_format = ("See "
+                            + "https://pillow.readthedocs.io/en/stable/"
+                            + "handbook/image-file-formats.html"
+                            + " for a full list of supported file formats.")
+        respond_to(channel, user, "I'll get right on it! Your cover photo will be ready in a jiffy!")
+
+        original_file_id = output['files'][0]['id']
+        original_file_url = output['files'][0]['url_private']
+        ext = original_file_url.split(".")[-1]
+        filename = "coverphoto." + ext
+        download_file(filename, original_file_url)
+
+        try:
+            background_img = coverphoto.Image.open(filename)
+        except OSError:
+            respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
+            os.remove(filename)
+            delete_file(original_file_id)
+            return
+        coverphoto.create_coverphoto(background_img, filename, argument)
+
+        comment = (mention_user(user) + "\nHere's your cover photo!"
+                   + " Your uploaded picture will now be deleted.\n"
+                   + " Please upload the cover photo to the appropriate folder on Google Drive!\n")
+        upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
+                                                channels=channel, initial_comment=comment)
+
+        # this is hacky, and not the intended way to use these tokens, but it works
+        # Deletes file from Slack
+        delete_file(original_file_id)
+        # Deletes file from system
+        os.remove(filename)
+    else:
+        # command_help expects an array containing the help item
+        # Displays help for watermark if watermark is not called from a file upload
+        print(argument, flush=True)
+        command_help(channel, ["coverphoto"], user, output)
 
 def delete_file(file_id):
     """
