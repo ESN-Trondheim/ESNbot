@@ -5,4 +5,6 @@ notes.txt
 *.jpg
 *.png
 *.code-workspace
+*.ttf
+*.otf
 __pycache__
