@@ -371,9 +371,15 @@ def command_watermark(channel, argument, user, output):
         ext = original_file_url.split(".")[-1]
         filename = "watermarked." + ext
         download_file(filename, original_file_url)
+        log_to_console("File downloaded...")
 
         if ext == "zip":
-            all_images_watermarked = wm.watermark_zip(argument, filename)
+            try:
+                all_images_watermarked = wm.watermark_zip(argument, filename)
+            except wm.zipfile.BadZipFile:
+                respond_to(channel, user, "That does not seem to be a valid zip file.")
+                os.remove(filename)
+                return
         else:
             try:
                 start_img = wm.Image.open(filename)
@@ -384,6 +390,7 @@ def command_watermark(channel, argument, user, output):
                 return
             wm.watermark(start_img, argument, filename)
             all_images_watermarked = True
+        log_to_console("Image(s) watermarked and saved...")
 
         unsupported_formats = "" if all_images_watermarked else ("\nI couldn't open "
                                                             + "some of the files you sent me, "
@@ -394,6 +401,7 @@ def command_watermark(channel, argument, user, output):
                    + " Your uploaded picture(s) will now be deleted." + unsupported_formats)
         upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
                                                 channels=channel, initial_comment=comment)
+        log_to_console("File uploaded...")
         # upload_id is meant for later use, to be able to delete the uploaded picture.
         # upload_id = upload_response['file']['id']
 
@@ -404,8 +412,10 @@ def command_watermark(channel, argument, user, output):
         # this is hacky, and not the intended way to use these tokens, but it works
         # Deletes file from Slack
         delete_file(original_file_id)
+        log_to_console("Original file deleted from Slack...")
         # Deletes file from system
         os.remove(filename)
+        log_to_console("File deleted from system...")
     else:
         # command_help expects an array containing the help item
         # Displays help for watermark if watermark is not called from a file upload
@@ -425,6 +435,7 @@ def command_make_cover_photo(channel, argument, user, output):
         ext = original_file_url.split(".")[-1]
         filename = "coverphoto." + ext
         download_file(filename, original_file_url)
+        log_to_console("File downloaded...")
 
         try:
             background_img = coverphoto.Image.open(filename)
@@ -434,18 +445,22 @@ def command_make_cover_photo(channel, argument, user, output):
             delete_file(original_file_id)
             return
         coverphoto.create_coverphoto(background_img, filename, argument)
+        log_to_console("Coverphoto created and saved...")
 
         comment = (mention_user(user) + "\nHere's your cover photo!"
                    + " Your uploaded picture will now be deleted.\n"
                    + " Please upload the cover photo to the appropriate folder on Google Drive!\n")
         upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
                                                 channels=channel, initial_comment=comment)
+        log_to_console("File uploaded...")
 
         # this is hacky, and not the intended way to use these tokens, but it works
         # Deletes file from Slack
         delete_file(original_file_id)
+        log_to_console("Original file deleted from Slack...")
         # Deletes file from system
         os.remove(filename)
+        log_to_console("File deleted from system...")
     else:
         # command_help expects an array containing the help item
         # Displays help for coverphoto if coverphoto is not called from a file upload
