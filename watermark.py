@@ -40,9 +40,11 @@ def new_overlay_size(start, overlay):
     Currently the overlay will be 1/5 of the width, or 1/25 of the total size.
     Returns a tuple containing the new dimensions.
     """
-    overlay_new_width = int(start.size[0] / 5)
-    factor = overlay_new_width / overlay.size[0]
-    overlay_new_height = int(overlay.size[1] * factor)
+    factor = 5 if start.size[0] > start.size[1] else 3.75
+    overlay_new_width = int(start.size[0] / factor)
+    # Need to calculate ratio to maintain proper aspect ratio of the logo
+    ratio = overlay_new_width / overlay.size[0]
+    overlay_new_height = int(overlay.size[1] * ratio)
     return (overlay_new_width, overlay_new_height)
 
 def valid_overlay_positions(start, overlay):
