@@ -84,10 +84,17 @@ def watermark(start_img, argument, filename):
     start_img.save(filename)
 
 def extract(filename, path):
+    """
+    Extracts all files from a zip archive to `path`
+    """
     with zipfile.ZipFile(filename) as myfile:
         myfile.extractall(path=path)
 
 def compress(filename, path):
+    """
+    Compresses files found in `path` to a zip archive named `filename`
+    The zip archive will have the same folder structure.
+    """
     with zipfile.ZipFile(filename, mode="w") as my_zip_file:
         for root, dirs, files in os.walk(path):
             for file in files:
@@ -95,13 +102,17 @@ def compress(filename, path):
                 # path(watermarked_images). Not necessary to add an extra folder.
                 # Now it will be saved as watermarked/files
                 # instead of watermarked/watermarked_images/files
-                # This only works on Windows systems, not Linux.
-                # Forward slash is used as separator instead of backslash on Linux
                 arcname = os.path.join(root, file).replace(path + os.sep, "")
                 print(arcname, flush=True)
                 my_zip_file.write(os.path.join(root, file), arcname=arcname)
 
 def watermark_folder(argument, path):
+    """
+    Watermarks all image files in folder specified in `path` with the options specifed in `argument`.
+
+    :Returns:
+    bool `supported_files`. True if all files were valid image files, False if not.
+    """
     supported_files = True
     for root, dirs, files in os.walk(path):
         for file in files:
@@ -117,6 +128,15 @@ def watermark_folder(argument, path):
     return supported_files
 
 def watermark_zip(argument, filename):
+    """
+    Extracts all files from zip archive `filename` to a directory.
+    Then watermarks all image files found in the archive and
+    compresses the new images to a new zip archive also named `filename`.
+    The directory created earlier is then deleted.
+
+    :Returns:
+    bool `supported_files`. True if all files were valid image files, False if not.
+    """
     path = "watermarked_images"
     extract(filename, path)
     os.remove(filename)
@@ -127,6 +147,9 @@ def watermark_zip(argument, filename):
     return supported_files
 
 def delete_directory(path):
+    """
+    Deletes a directory at `path` and all of its contents.
+    """
     for root, dirs, files in os.walk(path, topdown=False):
         # topdown=False is necessary to delete files/folders in the proper order.
         for file in files:
