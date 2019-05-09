@@ -79,7 +79,7 @@ def watermark(start_img, argument, filename):
         position = positions['br'] #bottom right is default"""
 
     start_img.paste(overlay_img, selected_position, overlay_img)
-    start_img.save(filename, quality=95)
+    start_img.save(filename)
 
 def extract(filename, path):
     with zipfile.ZipFile(filename) as myfile:
