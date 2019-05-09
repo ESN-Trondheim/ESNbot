@@ -31,6 +31,13 @@ COMMANDS = [
     "watermark",
     "coverphoto"
     ]
+IGNORED_MESSAGE_TYPES = [
+    "desktop_notification",
+    "reconnect_url",
+    "dnd_updated_user",
+    "user_change",
+    "presence_change",
+]
 
 # Instantiate Slack client
 slack_client = SlackClient(os.environ.get("SLACK_BOT_TOKEN")) #pylint: disable=invalid-name
@@ -53,27 +60,24 @@ def parse_slack_output(slack_rtm_output):
     `slack_rtm_output` is the events that are fired in the channel
 
     :Returns:
-    `text`, `channel`, `user` where text is the message after the bot is mentioned,
-    channel is the id of the channel, user is the id of the user.
+    `text`, `channel`, `user`, `output` where text is the message after the bot is mentioned,
+    channel is the id of the channel, user is the id of the user,
+    output is the entire output that the bot sees in the channel.
     If this information is not present, None, None, None is returned.
     """
     output_list = slack_rtm_output
     if output_list:
         for output in output_list:
-            if (output['type'] != 'desktop_notification'
-                    and output['type'] != 'reconnect_url'
-                    and output['type'] != 'dnd_updated_user'
-                    and output['type'] != 'user_change'
-                    and output['type'] != 'presence_change'):
+            if output['type'] not in IGNORED_MESSAGE_TYPES:
                 # maybe make this filter out ephemeral messages as well, like google drive messages
-                print(timestamp() + str(output) + "\n", flush=True)
+                log_to_console(str(output) + "\n")
             if output['type'] == 'goodbye':
-                print(timestamp() + "Session ended.", flush=True)
-                print(timestamp() + "Initiating new session...", flush=True)
+                log_to_console("Session ended.")
+                log_to_console("Initiating new session...")
                 if slack_client.rtm_connect(auto_reconnect=True):
-                    print(timestamp() + "ESNbot reconnected and running...", flush=True)
+                    log_to_console("ESNbot reconnected and running...")
                 else:
-                    print(timestamp() + "Reconnection failed.", flush=True)
+                    log_to_console("Reconnection failed.")
             if output and 'text' in output and AT_BOT in output['text']:
                 text = output['text'].split(AT_BOT)[1].strip()
                 if output.get('subtype') == "file_comment":
@@ -92,6 +96,13 @@ def timestamp():
     Returns a timestamp formatted properly as a string.
     """
     return time.strftime("%d-%m-%Y %H:%M:%S: ", time.localtime())
+
+def log_to_console(text):
+    """
+    Helper function to log what happens to console.
+    Prints timestamp followed by `text`, with flush=True
+    """
+    print(timestamp() + text, flush=True)
 
 def mention_user(user):
     """
@@ -127,7 +138,7 @@ def handle_command(text, channel, user, output):
 
     text = text.split()
     command = text[0].lower()
-    print(timestamp() + "Command used was '" + command + "'", flush=True)
+    log_to_console("Command used was '" + command + "'")
 
     if command not in COMMANDS:
         respond_to(channel, user,
@@ -281,7 +292,7 @@ def command_contact_info(channel, argument, user, output):
     else:
         gsheet = gspread.authorize(CREDENTIALS)
         contact_info_sheet = gsheet.open_by_key(os.environ.get("CONTACT_INFO_KEY")).sheet1
-        print(timestamp() + "Contact info sheet opened...", flush=True)
+        log_to_console("Contact info sheet opened...")
         contact_info_records = contact_info_sheet.get_all_records()
         response = ""
         for column in contact_info_records:
@@ -302,7 +313,7 @@ def command_beer_wine_penalty(channel, argument, user, output):
         # possibly add in a try statement here
         gsheet = gspread.authorize(CREDENTIALS)
         beer_wine_sheet = gsheet.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
-        print(timestamp() + "Beer/wine-sheet opened...", flush=True)
+        log_to_console("Beer/wine-sheet opened...")
         beer_wine_records = beer_wine_sheet.get_all_records()
         response = ""
         for column in beer_wine_records:
@@ -342,6 +353,7 @@ def command_watermark(channel, argument, user, output):
     #    # Displays help for watermark if watermark is not called from a file upload
     #    command_help(channel, ["watermark"], user, output)
     #else:
+    log_to_console("Arguments supplied by user: " + str(argument))
     if output.get('files'):
         not_valid_format = ("See "
                             + "https://pillow.readthedocs.io/en/stable/"
@@ -356,7 +368,7 @@ def command_watermark(channel, argument, user, output):
         download_file(filename, original_file_url)
 
         if ext == "zip":
-            supported_formats = wm.watermark_zip(argument, filename)
+            all_images_watermarked = wm.watermark_zip(argument, filename)
         else:
             try:
                 start_img = wm.Image.open(filename)
@@ -367,7 +379,7 @@ def command_watermark(channel, argument, user, output):
                 return
             wm.watermark(start_img, argument, filename)
 
-        unsupported_formats = "" if supported_formats else ("\nI couldn't open "
+        unsupported_formats = "" if all_images_watermarked else ("\nI couldn't open "
                                                             + "some of the files you sent me, "
                                                             + "probably because they "
                                                             + "were in a format I can't read.\n"
@@ -394,8 +406,7 @@ def command_watermark(channel, argument, user, output):
         command_help(channel, ["watermark"], user, output)
 
 def command_make_cover_photo(channel, argument, user, output):
-    print("Arguments supplied by user: ", flush=True)
-    print(argument)
+    log_to_console("Arguments supplied by user: " + str(argument))
     if output.get('files'):
         not_valid_format = ("See "
                             + "https://pillow.readthedocs.io/en/stable/"
@@ -464,22 +475,22 @@ def run():
         Main function
     """
     if slack_client.rtm_connect(auto_reconnect=True):
-        print(timestamp() + "ESNbot connected and running...", flush=True)
+        log_to_console("ESNbot connected and running...")
         while True:
             try:
                 text, channel, user, output = parse_slack_output(slack_client.rtm_read())
             except TimeoutError:
-                print(timestamp() + "Session timed out [TimeoutError].", flush=True)
-                print(timestamp() + "Initiating new session...", flush=True)
+                log_to_console("Session timed out [TimeoutError].")
+                log_to_console("Initiating new session...")
                 if slack_client.rtm_connect(auto_reconnect=True):
-                    print(timestamp() + "ESNbot reconnected and running...", flush=True)
+                    log_to_console("ESNbot reconnected and running...")
                 else:
-                    print(timestamp() + "Reconnection failed.", flush=True)
+                    log_to_console("Reconnection failed.")
             if channel:
                 handle_command(text, channel, user, output)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
-        print(timestamp() + "Connection failed.", flush=True)
+        log_to_console("Connection failed.")
 
 if __name__ == "__main__":
     run()
