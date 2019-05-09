@@ -37,6 +37,11 @@ IGNORED_MESSAGE_TYPES = [
     "dnd_updated_user",
     "user_change",
     "presence_change",
+    "user_typing",
+    "file_deleted",
+    "file_shared",
+    # "file_change", # Not sure if this should be ignored in console
+    # "file_created" # Not sure if this should be ignored in console
 ]
 
 # Instantiate Slack client
@@ -378,6 +383,7 @@ def command_watermark(channel, argument, user, output):
                 delete_file(original_file_id)
                 return
             wm.watermark(start_img, argument, filename)
+            all_images_watermarked = True
 
         unsupported_formats = "" if all_images_watermarked else ("\nI couldn't open "
                                                             + "some of the files you sent me, "
