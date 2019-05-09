@@ -29,13 +29,29 @@ ESN_COLORS = {
 }
 DIMENSIONS = (1568, 588)
 ASPECT_RATIO = DIMENSIONS[0] / DIMENSIONS[1]
-OVERLAY_LOGOS = Image.open("logos_overlay.png")
 DEFAULT_BACKGROUND = "default_background.png"
-TITLE_FONT = ImageFont.truetype("Kelson Sans Bold.otf", 90)
-SUBTITLE_FONT = ImageFont.truetype("Kelson Sans Bold.otf", 50)
-TITLE_V_OFFSET = -6
-SUBTITLE_V_OFFSET = 90
-SUBTITLE2_V_OFFSET = 152
+LOGOS = {
+    "regular": Image.open("overlay_regular.png"),
+    "buddy": Image.open("overlay_buddy.png")
+}
+FONTS = { #Fonts to be used for overlayed text
+    "title": ImageFont.truetype("Kelson Sans Bold.otf", 90),
+    "subtitle": ImageFont.truetype("Kelson Sans Bold.otf", 50)
+}
+V_OFFFSETS = { # Vertical offsets of text to be overlayed
+    "regular": {
+        "title": - 6,
+        "titleonly": - 6 + 25, # Offset a bit more when only title
+        "subtitle": 90,
+        "subtitle2": 152
+    },
+    "buddy": {
+        "title": - 6 + 42,
+        "titleonly": - 6 + 25 + 42, # Offset a bit more when only title
+        "subtitle": 90 + 42,
+        "subtitle2": 152 + 42
+    }
+}
 
 def create_color_overlay(background, color):
     img = Image.new(background.mode, DIMENSIONS, color["rgb"])
@@ -79,7 +95,7 @@ def get_title(argument):
     subtitle2 = ""
     if argument:
         argument = " ".join(argument)
-        titles = argument.split("\" \"")
+        titles = argument.split("\"")
         print(titles)
         while True:
             try:
@@ -91,6 +107,7 @@ def get_title(argument):
                 titles.remove("")
             except ValueError:
                 break
+        print(titles)
         try:
             title = titles[0]
         except IndexError:
@@ -111,17 +128,14 @@ def create_coverphoto(background, filename, argument):
 
     title, subtitle, subtitle2 = get_title(argument)
     background = resize_background(background)
-    cover = overlay_images(blend_color(background, color), OVERLAY_LOGOS)
+    cover = overlay_images(blend_color(background, color), LOGOS["regular"])
 
-    if subtitle and subtitle2:
-        overlay_text(cover, title, TITLE_FONT, TITLE_V_OFFSET)
-        overlay_text(cover, subtitle, SUBTITLE_FONT, SUBTITLE_V_OFFSET)
-        overlay_text(cover, subtitle2, SUBTITLE_FONT, SUBTITLE2_V_OFFSET)
-    if subtitle:
-        overlay_text(cover, title, TITLE_FONT, TITLE_V_OFFSET)
-        overlay_text(cover, subtitle, SUBTITLE_FONT, SUBTITLE_V_OFFSET)
+    if subtitle or subtitle2:
+        overlay_text(cover, title, FONTS["title"], V_OFFFSETS["regular"]["title"])
+        overlay_text(cover, subtitle, FONTS["subtitle"], V_OFFFSETS["regular"]["subtitle"])
+        overlay_text(cover, subtitle2, FONTS["subtitle"], V_OFFFSETS["regular"]["subtitle2"])
     else:
-        overlay_text(cover, title, TITLE_FONT, TITLE_V_OFFSET + 25) #offset a bit when only title
+        overlay_text(cover, title, FONTS["title"], V_OFFFSETS["regular"]["titleonly"])
     cover.save(filename, quality=95) #quality only affects jpg images
 
 def open_background_img(filename):
