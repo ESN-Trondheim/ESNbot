@@ -8,3 +8,5 @@ notes.txt
 *.ttf
 *.otf
 __pycache__
+.vscode
+log
