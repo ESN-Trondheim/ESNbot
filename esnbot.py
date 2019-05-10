@@ -551,7 +551,8 @@ def run():
                 logger.addHandler(handler)
                 logger.error(str(exc))
                 logger.error(traceback.format_exc())
-                # traceback.print_exc() # don't need to print it twice.
+                traceback.print_exc() # Probably don't need to print it twice.
+                                      # Unsure how it looks if it's exception inside exception.
                 break
             if channel:
                 handle_command(text, channel, user, output)
