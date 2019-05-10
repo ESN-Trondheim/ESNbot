@@ -4,11 +4,15 @@
 
 import os
 import time
+import logging
+from logging.handlers import RotatingFileHandler
+import traceback
 
 from slackclient import SlackClient
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
+
 import watermark as wm
 import coverphoto
 
@@ -73,16 +77,22 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list:
         for output in output_list:
+            log_to_file("log" + os.sep + "log.txt", str(output), "w")
             if output['type'] not in IGNORED_MESSAGE_TYPES:
                 # maybe make this filter out ephemeral messages as well, like google drive messages
                 log_to_console(str(output) + "\n")
             if output['type'] == 'goodbye':
-                log_to_console("Session ended.")
-                log_to_console("Initiating new session...")
+                log_to_file_and_console("log" + os.sep + "reconnect.txt",
+                                        "Session ended. ('goodbye' event)", "a")
+                log_to_file_and_console("log" + os.sep + "reconnect.txt",
+                                        "Initiating new session... ('goodbye' event)", "a")
                 if slack_client.rtm_connect(auto_reconnect=True):
-                    log_to_console("ESNbot reconnected and running...")
+                    log_to_file_and_console("log" + os.sep + "reconnect.txt",
+                                            "ESNbot reconnected and running... ('goodbye' event)",
+                                            "a")
                 else:
-                    log_to_console("Reconnection failed.")
+                    log_to_file_and_console("log" + os.sep + "reconnect.txt",
+                                            "Reconnection failed. ('goodbye' event)", "a")
             if output and 'text' in output and AT_BOT in output['text']:
                 text = output['text'].split(AT_BOT)[1].strip()
                 if output.get('subtype') == "file_comment":
@@ -108,6 +118,21 @@ def log_to_console(text):
     Prints timestamp followed by `text`, with flush=True
     """
     print(timestamp() + text, flush=True)
+
+def log_to_file(filename, message, mode):
+    """
+    Helper function to log things to textfile.
+    Used mostly for logging what happens in case of crashes.
+    """
+    with open(filename, mode) as file:
+        file.write(timestamp() + message + "\n")
+
+def log_to_file_and_console(filename, message, mode):
+    """
+    Helper function if it's needed to log to both console and file.
+    """
+    log_to_console(message)
+    log_to_file(filename, message, mode)
 
 def mention_user(user):
     """
@@ -393,10 +418,11 @@ def command_watermark(channel, argument, user, output):
         log_to_console("Image(s) watermarked and saved...")
 
         unsupported_formats = "" if all_images_watermarked else ("\nI couldn't open "
-                                                            + "some of the files you sent me, "
-                                                            + "probably because they "
-                                                            + "were in a format I can't read.\n"
-                                                            + not_valid_format)
+                                                                 + "some of the files you sent me, "
+                                                                 + "probably because they "
+                                                                 + "were in a format "
+                                                                 + "I can't read.\n"
+                                                                 + not_valid_format)
         comment = (mention_user(user) + "\nHere's your picture(s)!"
                    + " Your uploaded picture(s) will now be deleted." + unsupported_formats)
         upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
@@ -428,7 +454,8 @@ def command_make_cover_photo(channel, argument, user, output):
                             + "https://pillow.readthedocs.io/en/stable/"
                             + "handbook/image-file-formats.html"
                             + " for a full list of supported file formats.")
-        respond_to(channel, user, "I'll get right on it! Your cover photo will be ready in a jiffy!")
+        respond_to(channel, user,
+                   "I'll get right on it! Your cover photo will be ready in a jiffy!")
 
         original_file_id = output['files'][0]['id']
         original_file_url = output['files'][0]['url_private']
@@ -495,18 +522,37 @@ def run():
     """
         Main function
     """
+    if not os.path.exists("log"):
+        os.mkdir("log")
     if slack_client.rtm_connect(auto_reconnect=True):
         log_to_console("ESNbot connected and running...")
         while True:
             try:
                 text, channel, user, output = parse_slack_output(slack_client.rtm_read())
             except TimeoutError:
-                log_to_console("Session timed out [TimeoutError].")
-                log_to_console("Initiating new session...")
+                log_to_file_and_console("log" + os.sep + "reconnect.txt",
+                                        "Session timed out [TimeoutError].", "a")
+                log_to_file_and_console("log" + os.sep + "reconnect.txt",
+                                        "Initiating new session...", "a")
                 if slack_client.rtm_connect(auto_reconnect=True):
-                    log_to_console("ESNbot reconnected and running...")
+                    log_to_file_and_console("log" + os.sep + "reconnect.txt",
+                                            "ESNbot reconnected and running...", "a")
                 else:
-                    log_to_console("Reconnection failed.")
+                    log_to_file_and_console("log" + os.sep + "reconnect.txt",
+                                            "Reconnection failed.", "a")
+            except Exception as exc:
+                logger = logging.getLogger("Rotating Log")
+                logger.setLevel(logging.ERROR)
+                handler = RotatingFileHandler("log" + os.sep + "stacktrace.txt",
+                                              maxBytes=10000, backupCount=5)
+                formatter = logging.Formatter("%(asctime)s - %(name)s"
+                                              + " - %(levelname)s - %(message)s")
+                handler.setFormatter(formatter)
+                logger.addHandler(handler)
+                logger.error(str(exc))
+                logger.error(traceback.format_exc())
+                # traceback.print_exc() # don't need to print it twice.
+                break
             if channel:
                 handle_command(text, channel, user, output)
             time.sleep(READ_WEBSOCKET_DELAY)
