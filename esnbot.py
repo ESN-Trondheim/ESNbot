@@ -313,14 +313,16 @@ def command_help(channel, argument, user, output):
                      + ">" + AT_BOT + " `watermark tr black`\n",
         "coverphoto": "Creates a cover photo for Facebook from the uploaded picture.\n"
                       + "Upload the picture and add a comment *when uploading* with"
-                      + " the color of the overlay, the title and optionally subtitle(s).\n"
+                      + " the color of the overlay, if it's a cover photo for buddy"
+                      + " the title and optionally subtitle(s).\n"
+                      + "Write `buddy` directly after `coverphoto` if you want a buddy cover photo.\n"
                       + "Title and subtitles have to be enclosed in quatotion marks (\")\n"
                       + "You may enter up to two subtitles.\n"
                       + "If no color is entered, the cover photo will be blue.\n"
                       + "Valid colors are `cyan`, `magenta`, `green`, `orange`,"
                       + "`blue`" # and `all`. `all` will return a zipped file "
                       + "containing all five color variants.\n"
-                      + "For best results, the image should be 1568*588 or larger.\n"
+                      + "For best results, your image should be 1568*588 or larger.\n"
                       + "If the image is larger, it will be cropped to around the center "
                       + "to fit the dimensions.\n"
                       + "If the image is smaller, it will be upscaled and cropped around the "
@@ -328,7 +330,8 @@ def command_help(channel, argument, user, output):
                       + "*Examples*\n"
                       + ">" + AT_BOT + " `coverphoto \"Title\"`\n"
                       + ">" + AT_BOT + " `coverphoto blue \"Title\" \"Subtitle\"`\n"
-                      + ">" + AT_BOT + " `coverphoto all \"Title\" \"Subtitle\" \"Subtitle2\"`\n"
+                      + ">" + AT_BOT + " `coverphoto buddy \"Title\" \"Subtitle\" \"Subtitle2\"`\n"
+                      + ">" + AT_BOT + " `coverphoto buddy cyan \"Title\" \"Subtitle\"`\n"
     }
     if not argument:
         argument.append("help")
