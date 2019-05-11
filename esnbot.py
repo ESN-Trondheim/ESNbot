@@ -48,6 +48,34 @@ IGNORED_MESSAGE_TYPES = [
     # "file_created" # Not sure if this should be ignored in console
 ]
 
+# Set up loggers
+if not os.path.exists("log"):
+        os.mkdir("log")
+LOGGERS = {
+    "output": logging.getLogger("Output"),
+    "stacktrace": logging.getLogger("Stack trace"),
+    "reconnect": logging.getLogger("Reconnect"),
+    "console": logging.getLogger("Console")
+}
+LOGGERS["output"].setLevel(logging.DEBUG)
+LOGGERS["stacktrace"].setLevel(logging.ERROR)
+LOGGERS["reconnect"].setLevel(logging.INFO)
+LOGGERS["console"].setLevel(logging.CRITICAL)
+FORMATTER = logging.Formatter("%(asctime)s - %(name)s"
+                              + " - %(levelname)s - %(message)s")
+HANDLERS = {
+    "output": RotatingFileHandler("log" + os.sep + "output.log", maxBytes=1024*1024, backupCount=2),
+    "stacktrace": RotatingFileHandler("log" + os.sep + "stacktrace.log", maxBytes=1024*128, backupCount=1),
+    "reconnect": RotatingFileHandler("log" + os.sep + "reconnect.log", maxBytes=1024*128, backupCount=2),
+    "console": logging.StreamHandler()
+}
+for key, logger in LOGGERS.items():
+    HANDLERS[key].setFormatter(FORMATTER)
+    logger.addHandler(HANDLERS[key])
+# OUTPUT_LOGGER = logging.getLogger("Output")
+# STACKTRACE_LOGGER = logging.getLogger("Stack trace")
+# RECONNECT_LOGGER = logging.getLogger("Reconnect")
+
 # Instantiate Slack client
 slack_client = SlackClient(os.environ.get("SLACK_BOT_TOKEN")) #pylint: disable=invalid-name
 
@@ -77,22 +105,21 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list:
         for output in output_list:
-            log_to_file("log" + os.sep + "log.txt", str(output), "w")
+            LOGGERS["output"].debug(str(output))
             if output['type'] not in IGNORED_MESSAGE_TYPES:
                 # maybe make this filter out ephemeral messages as well, like google drive messages
                 log_to_console(str(output) + "\n")
             if output['type'] == 'goodbye':
-                log_to_file_and_console("log" + os.sep + "reconnect.txt",
-                                        "Session ended. ('goodbye' event)", "a")
-                log_to_file_and_console("log" + os.sep + "reconnect.txt",
-                                        "Initiating new session... ('goodbye' event)", "a")
+                LOGGERS["output"].info("Session ended. ('goodbye' event)")
+                log_to_console("Session ended. ('goodbye' event)")
+                LOGGERS["output"].info("Initiating new session... ('goodbye' event)")
+                log_to_console("Initiating new session... ('goodbye' event)")
                 if slack_client.rtm_connect(auto_reconnect=True):
-                    log_to_file_and_console("log" + os.sep + "reconnect.txt",
-                                            "ESNbot reconnected and running... ('goodbye' event)",
-                                            "a")
+                    LOGGERS["output"].info("ESNbot reconnected and running... ('goodbye' event)")
+                    log_to_console("ESNbot reconnected and running... ('goodbye' event)")
                 else:
-                    log_to_file_and_console("log" + os.sep + "reconnect.txt",
-                                            "Reconnection failed. ('goodbye' event)", "a")
+                    LOGGERS["output"].error("Reconnection failed.")
+                    log_to_console("Reconnection failed. ('goodbye' event)")
             if output and 'text' in output and AT_BOT in output['text']:
                 text = output['text'].split(AT_BOT)[1].strip()
                 if output.get('subtype') == "file_comment":
@@ -522,38 +549,29 @@ def run():
     """
         Main function
     """
-    if not os.path.exists("log"):
-        os.mkdir("log")
     if slack_client.rtm_connect(auto_reconnect=True):
-        log_to_console("ESNbot connected and running...")
+        log_to_file_and_console("log" + os.sep + "connected.log",
+                                "ESNbot connected and running...", "w")
         while True:
             try:
                 text, channel, user, output = parse_slack_output(slack_client.rtm_read())
             except TimeoutError:
-                log_to_file_and_console("log" + os.sep + "reconnect.txt",
-                                        "Session timed out [TimeoutError].", "a")
-                log_to_file_and_console("log" + os.sep + "reconnect.txt",
-                                        "Initiating new session...", "a")
+                LOGGERS["reconnect"].info("Session timed out [TimeoutError].")
+                log_to_console("Session timed out [TimeoutError].")
+                LOGGERS["reconnect"].info("Initiating new session...")
+                log_to_console("Initiating new session...")
                 if slack_client.rtm_connect(auto_reconnect=True):
-                    log_to_file_and_console("log" + os.sep + "reconnect.txt",
-                                            "ESNbot reconnected and running...", "a")
+                    LOGGERS["reconnect"].info("ESNbot reconnected and running...")
+                    log_to_console("ESNbot reconnected and running...")
                 else:
-                    log_to_file_and_console("log" + os.sep + "reconnect.txt",
-                                            "Reconnection failed.", "a")
+                    LOGGERS["reconnect"].error("Reconnection failed.")
+                    log_to_console("Reconnection failed.")
             except Exception as exc:
-                logger = logging.getLogger("Rotating Log")
-                logger.setLevel(logging.ERROR)
-                handler = RotatingFileHandler("log" + os.sep + "stacktrace.txt",
-                                              maxBytes=10000, backupCount=5)
-                formatter = logging.Formatter("%(asctime)s - %(name)s"
-                                              + " - %(levelname)s - %(message)s")
-                handler.setFormatter(formatter)
-                logger.addHandler(handler)
-                logger.error(str(exc))
-                logger.error(traceback.format_exc())
-                traceback.print_exc() # Probably don't need to print it twice.
+                LOGGERS["stacktrace"].error(str(exc))
+                LOGGERS["stacktrace"].error(traceback.format_exc())
+                # traceback.print_exc() # Probably don't need to print it twice.
                                       # Unsure how it looks if it's exception inside exception.
-                break
+                return
             if channel:
                 handle_command(text, channel, user, output)
             time.sleep(READ_WEBSOCKET_DELAY)
