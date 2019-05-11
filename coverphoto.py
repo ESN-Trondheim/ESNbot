@@ -46,10 +46,10 @@ V_OFFFSETS = { # Vertical offsets of text to be overlayed
         "subtitle2": 152
     },
     "buddy": {
-        "title": - 6 + 42,
+        "title": - 6 + 44,
         "titleonly": - 6 + 25 + 42, # Offset a bit more when only title
-        "subtitle": 90 + 42,
-        "subtitle2": 152 + 42
+        "subtitle": 90 + 46,
+        "subtitle2": 152 + 46
     }
 }
 
@@ -59,7 +59,7 @@ def create_color_overlay(background, color):
 
 def blend_color(background, color):
     overlay = create_color_overlay(background, color)
-    blended_img = Image.blend(background, overlay, 0.65)
+    blended_img = Image.blend(background, overlay, 0.60)
     return blended_img
 
 def overlay_images(background, overlay):
@@ -123,19 +123,24 @@ def get_title(argument):
     return title, subtitle, subtitle2
 
 def create_coverphoto(background, filename, argument):
+    buddy = False
+    if "buddy" in argument:
+        buddy = True
+        argument.remove("buddy")
+    
     color = get_color(argument)
     color = ESN_COLORS.get(color, ESN_COLORS["blue"])
 
     title, subtitle, subtitle2 = get_title(argument)
     background = resize_background(background)
-    cover = overlay_images(blend_color(background, color), LOGOS["regular"])
-
+    logos = "buddy" if buddy else "regular"
+    cover = overlay_images(blend_color(background, color), LOGOS[logos])
     if subtitle or subtitle2:
-        overlay_text(cover, title, FONTS["title"], V_OFFFSETS["regular"]["title"])
-        overlay_text(cover, subtitle, FONTS["subtitle"], V_OFFFSETS["regular"]["subtitle"])
-        overlay_text(cover, subtitle2, FONTS["subtitle"], V_OFFFSETS["regular"]["subtitle2"])
+        overlay_text(cover, title, FONTS["title"], V_OFFFSETS[logos]["title"])
+        overlay_text(cover, subtitle, FONTS["subtitle"], V_OFFFSETS[logos]["subtitle"])
+        overlay_text(cover, subtitle2, FONTS["subtitle"], V_OFFFSETS[logos]["subtitle2"])
     else:
-        overlay_text(cover, title, FONTS["title"], V_OFFFSETS["regular"]["titleonly"])
+        overlay_text(cover, title, FONTS["title"], V_OFFFSETS[logos]["titleonly"])
     cover.save(filename, quality=95) #quality only affects jpg images
 
 def open_background_img(filename):

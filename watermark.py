@@ -108,7 +108,8 @@ def compress(filename, path):
 
 def watermark_folder(argument, path):
     """
-    Watermarks all image files in folder specified in `path` with the options specifed in `argument`.
+    Watermarks all image files in folder specified in `path`
+    with the options specifed in `argument`.
 
     :Returns:
     bool `supported_files`. True if all files were valid image files, False if not.
