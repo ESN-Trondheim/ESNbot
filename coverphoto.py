@@ -77,16 +77,23 @@ def overlay_text(background, text, font, offset):
 
 def get_color(argument):
     if argument:
-        if argument[0] == "all":
-            argument.remove(argument[0])
-            return "blue"
+        args = (" ").join(argument).split("\"")[0] # Only care about what's before titles
+        # if "all" in args:
+        #     pass
         for color_key in ESN_COLORS:
-            if color_key in argument[0]:
-                argument.remove(argument[0])
+            if color_key in args:
                 return color_key
-        if str(argument[0]).startswith("\""):
-            return "blue"
-        argument.remove(argument[0])
+    # if argument:
+    #     if argument[0] == "all":
+    #         argument.remove(argument[0])
+    #         return "blue"
+    #     for color_key in ESN_COLORS:
+    #         if color_key in argument[0]:
+    #             argument.remove(argument[0])
+    #             return color_key
+    #     if str(argument[0]).startswith("\""):
+    #         return "blue"
+    #     argument.remove(argument[0])
     return "blue"
 
 def get_title(argument):
@@ -95,18 +102,8 @@ def get_title(argument):
     subtitle2 = ""
     if argument:
         argument = " ".join(argument)
-        titles = argument.split("\"")
-        print(titles)
-        while True:
-            try:
-                titles.remove(" ")
-            except ValueError:
-                break
-        while True:
-            try:
-                titles.remove("")
-            except ValueError:
-                break
+        # https://stackoverflow.com/questions/2076343/extract-string-from-between-quotations
+        titles = argument.split("\"")[1::2]
         print(titles)
         try:
             title = titles[0]
@@ -125,9 +122,11 @@ def get_title(argument):
 def create_coverphoto(background, filename, argument):
     buddy = False
     if "buddy" in argument:
+    # Should it be
+    # if "buddy" in (" ").join(argument).split("\"")[0]:
+    # ? Does it matter?
         buddy = True
-        argument.remove("buddy")
-    
+
     color = get_color(argument)
     color = ESN_COLORS.get(color, ESN_COLORS["blue"])
 
