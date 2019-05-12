@@ -103,6 +103,18 @@ def get_title(argument):
     if argument:
         argument = " ".join(argument)
         # https://stackoverflow.com/questions/2076343/extract-string-from-between-quotations
+        # Extracts every other item from the list, starting at index 1.
+        # Example:
+        # >>> foo = 'cyan "Title is here" not title "Subtitle" "Second subtitle"'
+        # >>> foo_split = foo.split("\"")
+        # >>> foo_split
+        # ['cyan ', 'Title is here', ' not title ', 'Subtitle', ' ', 'Second subtitle', '']
+        # >>> foo_split[1::2]
+        # ['Title is here', 'Subtitle', 'Second subtitle']
+        # Should always work if the number of quotes is even, even if
+        # the titles/subtitles don't come directly after each other.
+        # Still returns something if the number of quotes is odd,
+        # but may not return what the user is expecting. This is an input error from the user.
         titles = argument.split("\"")[1::2]
         print(titles)
         try:
