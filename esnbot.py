@@ -50,7 +50,7 @@ IGNORED_MESSAGE_TYPES = [
 
 # Set up loggers
 if not os.path.exists("log"):
-        os.mkdir("log")
+    os.mkdir("log")
 LOGGERS = {
     "output": logging.getLogger("Output"),
     "stacktrace": logging.getLogger("Stack trace"),
@@ -64,9 +64,12 @@ LOGGERS["console"].setLevel(logging.CRITICAL)
 FORMATTER = logging.Formatter("%(asctime)s - %(name)s"
                               + " - %(levelname)s - %(message)s")
 HANDLERS = {
-    "output": RotatingFileHandler("log" + os.sep + "output.log", maxBytes=1024*1024, backupCount=2),
-    "stacktrace": RotatingFileHandler("log" + os.sep + "stacktrace.log", maxBytes=1024*128, backupCount=1),
-    "reconnect": RotatingFileHandler("log" + os.sep + "reconnect.log", maxBytes=1024*128, backupCount=2),
+    "output": RotatingFileHandler("log" + os.sep + "output.log",
+                                  maxBytes=1024*1024, backupCount=2),
+    "stacktrace": RotatingFileHandler("log" + os.sep + "stacktrace.log",
+                                      maxBytes=1024*128, backupCount=1),
+    "reconnect": RotatingFileHandler("log" + os.sep + "reconnect.log",
+                                     maxBytes=1024*128, backupCount=2),
     "console": logging.StreamHandler()
 }
 for key, logger in LOGGERS.items():
@@ -81,13 +84,7 @@ slack_client = SlackClient(os.environ.get("SLACK_BOT_TOKEN")) #pylint: disable=i
 
 # gspread
 SCOPE = ['https://spreadsheets.google.com/feeds']
-CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name('drivecredentials.json', SCOPE)
-
-"""GSHEET = gspread.authorize(CREDENTIALS)
-BEER_WINE_SHEET = GSHEET.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
-print("Beer/wine-sheet opened...", flush=True)
-CONTACT_INFO_SHEET = GSHEET.open_by_key(os.environ.get("CONTACT_INFO_KEY")).sheet1
-print("Contact info sheet opened...", flush=True)"""
+CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name("setup" + os.sep + "drivecredentials.json", SCOPE)
 
 def parse_slack_output(slack_rtm_output):
     """
@@ -346,23 +343,42 @@ def command_list(channel, user):
         command_string = command_string + "`" + command + "`\n"
     respond_to(channel, user, "Available commands:\n" + command_string)
 
+def open_spreadsheet(sheet_key):
+    gsheet = gspread.authorize(CREDENTIALS)
+    contact_info_sheet = gsheet.open_by_key(os.environ.get(sheet_key)).sheet1
+    log_to_console("Spreadsheet opened...")
+    return contact_info_sheet.get_all_records()
+
+def get_info_from_sheet(name, sheet, *args):
+    response_list = []
+    for column in sheet:
+        if column["Fornavn"].lower().startswith(name):
+            name = f"{column['Fornavn']} {column['Etternavn']}:\n"
+            response_list.append(name)
+            for arg in args:
+                response_list.append(f"{arg}: {str(column[arg])}\n")
+    response = ("").join(response_list)
+    return response
+
 def command_contact_info(channel, argument, user, output):
     if not argument:
         respond_to(channel, user, os.environ.get("CONTACT_INFO"))
     else:
-        gsheet = gspread.authorize(CREDENTIALS)
-        contact_info_sheet = gsheet.open_by_key(os.environ.get("CONTACT_INFO_KEY")).sheet1
-        log_to_console("Contact info sheet opened...")
-        contact_info_records = contact_info_sheet.get_all_records()
-        response = ""
-        for column in contact_info_records:
-            if column['Fornavn'].lower().startswith(argument[0].lower()):
-                name = column['Fornavn'] + " " + column['Etternavn']
-                response = (response + "```" + name + ":"
-                            + " Tlf: " + str(column['Telefon'])
-                            + " E-post: " + str(column['E-post']) + "```\n")
+        try:
+            contact_info_sheet = open_spreadsheet("CONTACT_INFO_KEY")
+        except gspread.SpreadsheetNotFound: # Error handling
+            log_to_console("Spreadsheet not found...")
+            respond_to(channel, user, "Could not find the spreadsheet.\n"
+                       + "Contact your webmaster for assistance.")
+            return
+        except TimeoutError: # Error handling
+            respond_to(channel, user, "Could not contact Google Drive, sorry.\n"
+                       + "Try again later.")
+            return
+
+        response = get_info_from_sheet(argument[0], contact_info_sheet, "Telefon", "E-post")
         if response:
-            respond_to(channel, user, response)
+            respond_to(channel, user, "```" + response + "```") # Backticks to enclose it in a code block in Slack
         else:
             respond_to(channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
 
@@ -370,20 +386,21 @@ def command_beer_wine_penalty(channel, argument, user, output):
     if not argument:
         respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
     else:
-        # possibly add in a try statement here
-        gsheet = gspread.authorize(CREDENTIALS)
-        beer_wine_sheet = gsheet.open_by_key(os.environ.get("BEER_WINE_KEY")).sheet1
-        log_to_console("Beer/wine-sheet opened...")
-        beer_wine_records = beer_wine_sheet.get_all_records()
-        response = ""
-        for column in beer_wine_records:
-            if column['Fornavn'].lower().startswith(argument[0].lower()):
-                name = column['Fornavn'] + " " + column['Etternavn']
-                response = (response + "```" + name + ":"
-                            + " Vinstraff: " + str(column['Vinstraff'])
-                            + " Ølstraff: " + str(column['Ølstraff']) + "```\n")
+        try:
+            beer_wine_sheet = open_spreadsheet("BEER_WINE_KEY")
+        except gspread.SpreadsheetNotFound: # Error handling
+            log_to_console("Spreadsheet not found...")
+            respond_to(channel, user, "Could not find the spreadsheet.\n"
+                       + "Contact your webmaster for assistance.")
+            return
+        except TimeoutError: # Error handling
+            respond_to(channel, user, "Could not contact Google Drive, sorry.\n"
+                       + "Try again later.")
+            return
+
+        response = get_info_from_sheet(argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
         if response:
-            respond_to(channel, user, response)
+            respond_to(channel, user, "```" + response + "```")
         else:
             respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
 
