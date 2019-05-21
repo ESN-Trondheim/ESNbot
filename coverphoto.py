@@ -83,17 +83,6 @@ def get_color(argument):
         for color_key in ESN_COLORS:
             if color_key in args:
                 return color_key
-    # if argument:
-    #     if argument[0] == "all":
-    #         argument.remove(argument[0])
-    #         return "blue"
-    #     for color_key in ESN_COLORS:
-    #         if color_key in argument[0]:
-    #             argument.remove(argument[0])
-    #             return color_key
-    #     if str(argument[0]).startswith("\""):
-    #         return "blue"
-    #     argument.remove(argument[0])
     return "blue"
 
 def get_title(argument):
