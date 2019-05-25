@@ -90,7 +90,16 @@ def get_title(argument):
     subtitle = ""
     subtitle2 = ""
     if argument:
+        # for index, word in enumerate(argument):
+        #     if word.startswith("“"):
+        #         argument[index] = word.replace("“", "\"")
+        #     elif word.endswith("”"):
+        #         argument[index] = word.replace("”", "\"")
         argument = " ".join(argument)
+        # I think the below is clearer than above, though it might not cover weird edge cases.
+        # I still think this is better.
+        argument = argument.replace("“", "\"")
+        argument = argument.replace("”", "\"")
         # https://stackoverflow.com/questions/2076343/extract-string-from-between-quotations
         # Extracts every other item from the list, starting at index 1.
         # Example:
