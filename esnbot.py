@@ -351,15 +351,15 @@ def open_spreadsheet(sheet_key):
 
 def get_info_from_sheet(name, sheet, *args):
     response_list = []
-    log_to_console(name)
     name = name.lower()
-    log_to_console(name)
     for column in sheet:
         if column["Fornavn"].lower().startswith(name):
-            name = f"{column['Fornavn']} {column['Etternavn']}:\n"
-            response_list.append(name)
+            response_list.append("```")
+            found_name = f"{column['Fornavn']} {column['Etternavn']}:\n"
+            response_list.append(found_name)
             for arg in args:
                 response_list.append(f"{arg}: {str(column[arg])}\n")
+            response_list.append("```\n")
     response = ("").join(response_list)
     return response
 
@@ -381,7 +381,7 @@ def command_contact_info(channel, argument, user, output):
 
         response = get_info_from_sheet(argument[0], contact_info_sheet, "Telefon", "E-post")
         if response:
-            respond_to(channel, user, "```" + response + "```") # Backticks to enclose it in a code block in Slack
+            respond_to(channel, user, response) # Backticks to enclose it in a code block in Slack
         else:
             respond_to(channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
 
