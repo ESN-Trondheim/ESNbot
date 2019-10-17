@@ -351,6 +351,9 @@ def open_spreadsheet(sheet_key):
 
 def get_info_from_sheet(name, sheet, *args):
     response_list = []
+    log_to_console(name)
+    name = name.lower()
+    log_to_console(name)
     for column in sheet:
         if column["Fornavn"].lower().startswith(name):
             name = f"{column['Fornavn']} {column['Etternavn']}:\n"
