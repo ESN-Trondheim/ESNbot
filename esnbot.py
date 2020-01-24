@@ -403,7 +403,7 @@ def command_beer_wine_penalty(channel, argument, user, output):
 
         response = get_info_from_sheet(argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
         if response:
-            respond_to(channel, user, "```" + response + "```")
+            respond_to(channel, user, response)
         else:
             respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
 
