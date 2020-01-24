@@ -100,6 +100,8 @@ def get_title(argument):
         # I still think this is better.
         argument = argument.replace("“", "\"")
         argument = argument.replace("”", "\"")
+        argument = argument.replace("«", "\"")
+        argument = argument.replace("»", "\"")
         # https://stackoverflow.com/questions/2076343/extract-string-from-between-quotations
         # Extracts every other item from the list, starting at index 1.
         # Example:
