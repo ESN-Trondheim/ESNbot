@@ -75,6 +75,7 @@ def invert_bg(background):
     """
     Inverts the colors of the background for the logo. Only meant to be used if the user
     wants a white logo, as that won't be visible on a white background.
+    Returns the inverted image.
     """
     if background.mode == "RGBA":
         r, g, b, a = background.split()
