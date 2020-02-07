@@ -5,6 +5,7 @@ A set of functions to help command_watermark()
 import zipfile
 import os
 from PIL import Image
+import PIL.ImageOps
 
 def get_overlay_color(argument):
     """
@@ -34,16 +35,23 @@ def get_overlay_position(argument):
             return "bl"
     return "br"
 
-def new_overlay_size(start, overlay):
+def calculate_ratio(start, overlay):
+    """
+    Calculates the ratio to be used when resizing the logo and white background.
+    Also need the ratio to maintain proper aspect ratio of the logo.
+    """
+    factor = 5 if start.size[0] > start.size[1] else 3.75
+    overlay_new_width = int(start.size[0] / factor)
+    ratio = overlay_new_width / overlay.size[0]
+    return ratio
+
+def new_overlay_size(overlay, ratio):
     """
     Determines an appropriate size for the `overlay`, given the image in `start`.
     Currently the overlay will be 1/5 of the width, or 1/25 of the total size.
     Returns a tuple containing the new dimensions.
     """
-    factor = 5 if start.size[0] > start.size[1] else 3.75
-    overlay_new_width = int(start.size[0] / factor)
-    # Need to calculate ratio to maintain proper aspect ratio of the logo
-    ratio = overlay_new_width / overlay.size[0]
+    overlay_new_width = int(overlay.size[0] * ratio)
     overlay_new_height = int(overlay.size[1] * ratio)
     return (overlay_new_width, overlay_new_height)
 
@@ -63,24 +71,58 @@ def valid_overlay_positions(start, overlay):
     }
     return position
 
+def invert_bg(background):
+    """
+    Inverts the colors of the background for the logo. Only meant to be used if the user
+    wants a white logo, as that won't be visible on a white background.
+    """
+    if background.mode == "RGBA":
+        r, g, b, a = background.split()
+        rgb_image = Image.merge("RGB", (r, g, b))
+        inverted = PIL.ImageOps.invert(rgb_image)
+        r, g, b = inverted.split()
+        background = Image.merge("RGBA", (r, g, b, a))
+    else:
+        background = PIL.ImageOps.invert(background)
+    return background
+
 def watermark(start_img, argument, filename):
     """
     Watermarks `start_img` with the logo and position specified in `argument`, if any is specified.
-    Default is colors and bottom left corner.
+    Default is colors and bottom right corner.
     Then saves the resulting image to `filename` in the same folder the script runs from.
     """
-    overlay_img = Image.open("logo-" + get_overlay_color(argument) + ".png")
-    overlay_img = overlay_img.resize(new_overlay_size(start_img, overlay_img), Image.ANTIALIAS)
+    white_bg = Image.open("bg.png")
+    # Must calculate ratio from white background, the size looks best that way.
+    ratio = calculate_ratio(start_img, white_bg)
+    logo = Image.open("logo-" + get_overlay_color(argument) + ".png")
+    if get_overlay_color(argument) == "white":
+        white_bg = invert_bg(white_bg)
 
-    valid_positions = valid_overlay_positions(start_img, overlay_img)
-    selected_position = valid_positions.get(get_overlay_position(argument))
+    white_bg = white_bg.resize(new_overlay_size(white_bg, ratio), Image.ANTIALIAS)
+    logo = logo.resize(new_overlay_size(logo, ratio), Image.ANTIALIAS)
+
+    valid_pos_white = valid_overlay_positions(start_img, white_bg)
+    valid_pos_logo = valid_overlay_positions(start_img, logo)
+
+    # Transpose the background if another corner that bottom right is selected.
+    if get_overlay_position(argument) == "tl":
+        white_bg = white_bg.transpose(Image.ROTATE_180)
+    elif get_overlay_position(argument) == "tr":
+        white_bg = white_bg.transpose(Image.FLIP_TOP_BOTTOM)
+    elif get_overlay_position(argument) == "bl":
+        white_bg = white_bg.transpose(Image.FLIP_LEFT_RIGHT)
+
+    selected_pos_white = valid_pos_white.get(get_overlay_position(argument))
+    selected_pos_logo = valid_pos_logo.get(get_overlay_position(argument))
 
     """if argument:
         position = positions.get(argument[0]) or positions['br'] #bottom right is default
     else:
         position = positions['br'] #bottom right is default"""
 
-    start_img.paste(overlay_img, selected_position, overlay_img)
+    start_img.paste(white_bg, selected_pos_white, white_bg)
+    start_img.paste(logo, selected_pos_logo, logo)
     start_img.save(filename)
 
 def extract(filename, path):
