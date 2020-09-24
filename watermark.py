@@ -4,8 +4,11 @@ A set of functions to help command_watermark()
 
 import zipfile
 import os
-from PIL import Image
+from PIL import Image, ImageFile
 import PIL.ImageOps
+
+# Make sure big images also load
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def get_overlay_color(argument):
     """
