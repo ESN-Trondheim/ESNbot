@@ -575,7 +575,7 @@ def run():
     """
         Main function
     """
-    if slack_client.rtm_connect(auto_reconnect=True):
+    if slack_client.rtm_connect(auto_reconnect=True, with_team_state=False):
         log_to_file_and_console("log" + os.sep + "connected.log",
                                 "ESNbot connected and running...", "w")
         while True:
@@ -586,7 +586,7 @@ def run():
                 log_to_console("Session timed out [TimeoutError].")
                 LOGGERS["reconnect"].info("Initiating new session...")
                 log_to_console("Initiating new session...")
-                if slack_client.rtm_connect(auto_reconnect=True):
+                if slack_client.rtm_connect(auto_reconnect=True, with_team_state=False):
                     LOGGERS["reconnect"].info("ESNbot reconnected and running...")
                     log_to_console("ESNbot reconnected and running...")
                 else:
