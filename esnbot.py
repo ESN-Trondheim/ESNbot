@@ -7,14 +7,29 @@ import time
 import logging
 from logging.handlers import RotatingFileHandler
 import traceback
+import sys
+import pathlib
 
 from slackclient import SlackClient
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
+import dotenv
 
 import watermark as wm
 import coverphoto
+
+# Using pathlib to construct path so we make sure that it works on both Windows and Linux
+if os.path.isfile(pathlib.Path.cwd().joinpath("setup", "secret-dev.env")):
+    dotenv.load_dotenv(dotenv_path=pathlib.Path.cwd().joinpath("setup", "secret-dev.env"))
+    print("secret-dev.env loaded...")
+elif os.path.isfile(pathlib.Path.cwd().joinpath("setup", "secret-prod.env")):
+    dotenv.load_dotenv(dotenv_path=pathlib.Path.cwd().joinpath("setup", "secret-prod.env"))
+    print("secret-prod.env loaded...")
+else:
+    print("Environment variables not found...")
+    print("Bot could not start.")
+    sys.exit() # Should probably handle this in run()..
 
 # esnbot's ID
 BOT_ID = os.environ.get("BOT_ID")
