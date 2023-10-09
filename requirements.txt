@@ -4,5 +4,4 @@ Pillow==10.0.1
 requests==2.31.0
 python-dotenv==1.0.0
 slackclient==2.0.0
-websocket==0.2.1
 websocket-client==1.6.3
