@@ -2,6 +2,9 @@
 Strips newlines from files and replaces them with spaces.
 Good to run this on .sh files created on Windows,
 as newlines seem to confuse Ubuntu when sourcing .sh files in the console.
+
+This is not really needed anymore, as the project is now using python-dotenv to handle
+environment variables.
 """
 
 import sys
