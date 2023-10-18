@@ -1,5 +1,6 @@
 # ESNbot
 <div align="center">
+
 [![License](https://img.shields.io/github/license/ESN-Trondheim/ESNbot)](https://github.com/ESN-Trondheim/ESNbot/blob/master/LICENSE)
 [![Issues](https://img.shields.io/github/issues/ESN-Trondheim/ESNbot)](https://github.com/ESN-Trondheim/ESNbot/issues)
 [![Contributors](https://img.shields.io/github/contributors/ESN-Trondheim/ESNbot)](https://github.com/ESN-Trondheim/ESNbot/graphs/contributors)\
