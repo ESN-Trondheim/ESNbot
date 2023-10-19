@@ -4,12 +4,8 @@ import os
 import gspread
 from utils import log_to_console
 from utils import mention_user
-import graphics.watermark as watermark
-import graphics.coverphoto as coverphoto
-
-# These two imports are only used for the watermark command
-import zipfile
-from PIL import Image
+import graphics.watermark as wm
+import graphics.coverphoto as cp
 
 def esnfarger(client, channel, user, argument, output):
     client.respond_to(channel, user,
@@ -69,25 +65,24 @@ def standliste(client, channel, user, argument, output):
 
 def vinstraff(client, channel, user, argument, output):
     if not argument:
-        client.respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
-    else:
-        try:
-            beer_wine_sheet = gsheets.open_spreadsheet("BEER_WINE_KEY")
-        except gspread.SpreadsheetNotFound: # Error handling
-            log_to_console("Spreadsheet not found...")
-            client.respond_to(channel, user, "Could not find the spreadsheet.\n"
-                       + "Contact your webmaster for assistance.")
-            return
-        except TimeoutError: # Error handling
-            client.respond_to(channel, user, "Could not contact Google Drive, sorry.\n"
-                       + "Try again later.")
-            return
+        return client.respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
+    try:
+        beer_wine_sheet = gsheets.open_spreadsheet("BEER_WINE_KEY")
+    except gspread.SpreadsheetNotFound: # Error handling
+        log_to_console("Spreadsheet not found...")
+        client.respond_to(channel, user, "Could not find the spreadsheet.\n"
+                    + "Contact your webmaster for assistance.")
+        return
+    except TimeoutError: # Error handling
+        client.respond_to(channel, user, "Could not contact Google Drive, sorry.\n"
+                    + "Try again later.")
+        return
 
-        response = gsheets.get_info_from_sheet(argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
-        if response:
-            client.respond_to(channel, user, response)
-        else:
-            client.respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
+    response = gsheets.get_info_from_sheet(argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
+    if response:
+        client.respond_to(channel, user, response)
+    else:
+        client.respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
 
 def watermark(client, channel, user, argument, output):
     #if output.get('subtype') != "file_share":
@@ -116,20 +111,20 @@ def watermark(client, channel, user, argument, output):
 
     if ext == "zip":
         try:
-            all_images_watermarked = watermark.watermark_zip(argument, filename)
-        except zipfile.BadZipFile:
+            all_images_watermarked = wm.watermark_zip(argument, filename)
+        except wm.zipfile.BadZipFile:
             client.respond_to(channel, user, "That does not seem to be a valid zip file.")
             os.remove(filename)
             return
     else:
         try:
-            start_img = Image.open(filename)
+            start_img = wm.Image.open(filename)
         except OSError:
             client.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
             os.remove(filename)
             client.delete_file(original_file_id)
             return
-        watermark(start_img, argument, filename)
+        wm.watermark(start_img, argument, filename)
         all_images_watermarked = True
     log_to_console("Image(s) watermarked and saved...")
 
@@ -180,13 +175,13 @@ def coverphoto(client, channel, user, argument, output):
     log_to_console("File downloaded...")
 
     try:
-        background_img = Image.open(filename)
+        background_img = cp.Image.open(filename)
     except OSError:
         client.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
         os.remove(filename)
         client.delete_file(original_file_id)
         return
-    coverphoto.create_coverphoto(background_img, filename, argument)
+    cp.create_coverphoto(background_img, filename, argument)
     log_to_console("Coverphoto created and saved...")
 
     comment = (
@@ -194,7 +189,7 @@ def coverphoto(client, channel, user, argument, output):
         "Here's your cover photo! Your uploaded picture will now be deleted\n"
         "Please upload the cover photo to the appropriate folder on Google Drive!\n"
     )
-    upload_response = client.slack_client.api_call("files.upload", file=open(filename, "rb"),
+    client.slack_client.api_call("files.upload", file=open(filename, "rb"),
                                             channels=channel, initial_comment=comment)
     log_to_console("File uploaded...")
 
