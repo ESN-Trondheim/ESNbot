@@ -1,20 +1,20 @@
 from utils import mention_bot
-import commands as cmd
+import commands
 
 READ_WEBSOCKET_DELAY = 1
 
 COMMANDS = {
-        "list": cmd.list.command,
-        "reimbursement": cmd.reimbursement.command,
-        "esnfarger": cmd.esnfarger.command,
-        "esnfont": cmd.esnfont.command,
-        "standliste": cmd.standliste.command,
-        "help": cmd.help.command,
-        "ølstraff": cmd.vinstraff.command,
-        "vinstraff": cmd.vinstraff.command,
-        "kontaktinfo": cmd.kontaktinfo.command,
-        "watermark": cmd.watermark.command,
-        "coverphoto": cmd.coverphoto.command
+        "list": commands.list,
+        "reimbursement": commands.reimbursement,
+        "esnfarger": commands.esnfarger,
+        "esnfont": commands.esnfont,
+        "standliste": commands.standliste,
+        "help": commands.help,
+        "ølstraff": commands.vinstraff,
+        "vinstraff": commands.vinstraff,
+        "kontaktinfo": commands.kontaktinfo,
+        "watermark": commands.watermark,
+        "coverphoto": commands.coverphoto
     }
 
 COMMANDS_HELP = {
