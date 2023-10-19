@@ -1,3 +1,4 @@
+import slackutils as slack
 
-def command_esn_font(channel, user):
-    respond_to(channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
+def command(channel, user, argument, output):
+    slack.respond_to(channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")

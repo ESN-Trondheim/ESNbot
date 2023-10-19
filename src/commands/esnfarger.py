@@ -1,6 +1,7 @@
+import slackutils as slack
 
-def command_esn_colors(channel, user):
-    respond_to(channel, user,
+def command(channel, user, argument, output):
+    slack.respond_to(channel, user,
                "• ESN Cyan #00aeef\n"
                + "• ESN Magenta #ec008c\n"
                + "• ESN Green #7ac143\n"

@@ -9,8 +9,6 @@ from logging.handlers import RotatingFileHandler
 import traceback
 import sys
 import pathlib
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import dotenv
 
 from utils import log_to_console, log_to_file_and_console
@@ -59,30 +57,6 @@ for key, logger in LOGGERS.items():
 # OUTPUT_LOGGER = logging.getLogger("Output")
 # STACKTRACE_LOGGER = logging.getLogger("Stack trace")
 # RECONNECT_LOGGER = logging.getLogger("Reconnect")
-
-# gspread
-SCOPE = ['https://spreadsheets.google.com/feeds']
-CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name(os.getcwd() + os.sep + "setup" + os.sep + "drivecredentials.json", SCOPE)
-
-def open_spreadsheet(sheet_key):
-    gsheet = gspread.authorize(CREDENTIALS)
-    contact_info_sheet = gsheet.open_by_key(os.environ.get(sheet_key)).sheet1
-    log_to_console("Spreadsheet opened...")
-    return contact_info_sheet.get_all_records()
-
-def get_info_from_sheet(name, sheet, *args):
-    response_list = []
-    name = name.lower()
-    for column in sheet:
-        if column["Fornavn"].lower().startswith(name):
-            response_list.append("```")
-            found_name = f"{column['Fornavn']} {column['Etternavn']}:\n"
-            response_list.append(found_name)
-            for arg in args:
-                response_list.append(f"{arg}: {str(column[arg])}\n")
-            response_list.append("```\n")
-    response = ("").join(response_list)
-    return response
 
 def run():
     """

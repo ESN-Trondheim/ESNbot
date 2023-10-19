@@ -1,10 +1,9 @@
 import os
-from esnbot import slack_client
+import commands.help
+import slackutils as slack
 from utils import log_to_console
-from slackutils import download_file, respond_to, delete_file, mention_user
-from help import command_help
 
-def command_watermark(channel, argument, user, output):
+def command(channel, user, argument, output):
     #if output.get('subtype') != "file_share":
     #    # command_help expects an array containing the help item
     #    # Displays help for watermark if watermark is not called from a file upload
@@ -16,43 +15,42 @@ def command_watermark(channel, argument, user, output):
                             + "https://pillow.readthedocs.io/en/stable/"
                             + "handbook/image-file-formats.html"
                             + " for a full list of supported file formats.")
-        respond_to(channel, user, "I'll get right on it! Your picture(s) will be ready in a jiffy!")
+        slack.respond_to(channel, user, "I'll get right on it! Your picture(s) will be ready in a jiffy!")
 
         original_file_id = output['files'][0]['id']
         original_file_url = output['files'][0]['url_private']
         ext = original_file_url.split(".")[-1]
         filename = "watermarked." + ext
-        download_file(filename, original_file_url)
+        slack.download_file(filename, original_file_url)
         log_to_console("File downloaded...")
 
         if ext == "zip":
             try:
                 all_images_watermarked = watermark_zip(argument, filename)
             except zipfile.BadZipFile:
-                respond_to(channel, user, "That does not seem to be a valid zip file.")
+                slack.respond_to(channel, user, "That does not seem to be a valid zip file.")
                 os.remove(filename)
                 return
         else:
             try:
                 start_img = Image.open(filename)
             except OSError:
-                respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
+                slack.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
                 os.remove(filename)
-                delete_file(original_file_id)
+                slack.delete_file(original_file_id)
                 return
             watermark(start_img, argument, filename)
             all_images_watermarked = True
         log_to_console("Image(s) watermarked and saved...")
 
-        unsupported_formats = "" if all_images_watermarked else ("\nI couldn't open "
-                                                                 + "some of the files you sent me, "
-                                                                 + "probably because they "
-                                                                 + "were in a format "
-                                                                 + "I can't read.\n"
-                                                                 + not_valid_format)
-        comment = (mention_user(user) + "\nHere's your picture(s)!"
-                   + " Your uploaded picture(s) will now be deleted." + unsupported_formats)
-        upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
+        comment = (f"slack.mention_user(user)\n"
+                   "Here's your picture(s)! Your uploaded picture(s) will now be deleted."
+                    "" if all_images_watermarked else (
+                    "\nI couldn't open some of the files you sent me,"
+                    "probably because they were in a format I can't read.\n"
+                    f"{not_valid_format}")
+        )
+        upload_response = slack.slack_client.api_call("files.upload", file=open(filename, "rb"),
                                                 channels=channel, initial_comment=comment)
         log_to_console("File uploaded...")
         # upload_id is meant for later use, to be able to delete the uploaded picture.
@@ -64,7 +62,7 @@ def command_watermark(channel, argument, user, output):
 
         # this is hacky, and not the intended way to use these tokens, but it works
         # Deletes file from Slack
-        delete_file(original_file_id)
+        slack.delete_file(original_file_id)
         log_to_console("Original file deleted from Slack...")
         # Deletes file from system
         os.remove(filename)
@@ -72,7 +70,7 @@ def command_watermark(channel, argument, user, output):
     else:
         # command_help expects an array containing the help item
         # Displays help for watermark if watermark is not called from a file upload
-        command_help(channel, ["watermark"], user, output)
+        commands.help.command(channel, ["watermark"], user, output)
 
 """
 A set of functions to help command_watermark()

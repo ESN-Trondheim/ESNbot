@@ -1,55 +1,57 @@
-from esnbot import slack_client
-from utils import log_to_console
-from slackutils import respond_to, download_file, delete_file, mention_user
+import slackutils as slack
 import os
-from help import command_help
+import commands.help
+from utils import log_to_console
 
 
-def command_make_cover_photo(channel, argument, user, output):
+def command(channel, user, argument, output):
     log_to_console("Arguments supplied by user: " + str(argument))
-    if output.get('files'):
-        not_valid_format = ("See "
-                            + "https://pillow.readthedocs.io/en/stable/"
-                            + "handbook/image-file-formats.html"
-                            + " for a full list of supported file formats.")
-        respond_to(channel, user,
-                   "I'll get right on it! Your cover photo will be ready in a jiffy!")
-
-        original_file_id = output['files'][0]['id']
-        original_file_url = output['files'][0]['url_private']
-        ext = original_file_url.split(".")[-1]
-        filename = "coverphoto." + ext
-        download_file(filename, original_file_url)
-        log_to_console("File downloaded...")
-
-        try:
-            background_img = Image.open(filename)
-        except OSError:
-            respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
-            os.remove(filename)
-            delete_file(original_file_id)
-            return
-        create_coverphoto(background_img, filename, argument)
-        log_to_console("Coverphoto created and saved...")
-
-        comment = (mention_user(user) + "\nHere's your cover photo!"
-                   + " Your uploaded picture will now be deleted.\n"
-                   + " Please upload the cover photo to the appropriate folder on Google Drive!\n")
-        upload_response = slack_client.api_call("files.upload", file=open(filename, "rb"),
-                                                channels=channel, initial_comment=comment)
-        log_to_console("File uploaded...")
-
-        # this is hacky, and not the intended way to use these tokens, but it works
-        # Deletes file from Slack
-        delete_file(original_file_id)
-        log_to_console("Original file deleted from Slack...")
-        # Deletes file from system
-        os.remove(filename)
-        log_to_console("File deleted from system...")
-    else:
+    if not output.get('files'):
         # command_help expects an array containing the help item
         # Displays help for coverphoto if coverphoto is not called from a file upload
-        command_help(channel, ["coverphoto"], user, output)
+        commands.help(channel, ["coverphoto"], user, output)
+
+    not_valid_format = ("See "
+                        + "https://pillow.readthedocs.io/en/stable/"
+                        + "handbook/image-file-formats.html"
+                        + " for a full list of supported file formats.")
+    slack.respond_to(channel, user,
+                "I'll get right on it! Your cover photo will be ready in a jiffy!")
+
+    original_file_id = output['files'][0]['id']
+    original_file_url = output['files'][0]['url_private']
+    ext = original_file_url.split(".")[-1]
+    filename = "coverphoto." + ext
+    slack.download_file(filename, original_file_url)
+    log_to_console("File downloaded...")
+
+    try:
+        background_img = Image.open(filename)
+    except OSError:
+        slack.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
+        os.remove(filename)
+        slack.delete_file(original_file_id)
+        return
+    create_coverphoto(background_img, filename, argument)
+    log_to_console("Coverphoto created and saved...")
+
+    comment = (
+        f"{slack.mention_user(user)}\n"
+        "Here's your cover photo! Your uploaded picture will now be deleted\n"
+        "Please upload the cover photo to the appropriate folder on Google Drive!\n"
+    )
+    upload_response = slack.slack_client.api_call("files.upload", file=open(filename, "rb"),
+                                            channels=channel, initial_comment=comment)
+    log_to_console("File uploaded...")
+
+    # this is hacky, and not the intended way to use these tokens, but it works
+    # Deletes file from Slack
+    slack.delete_file(original_file_id)
+    log_to_console("Original file deleted from Slack...")
+    # Deletes file from system
+    os.remove(filename)
+    log_to_console("File deleted from system...")
+        
 
 """
 A script to automate the creation of cover photos for Facebook
@@ -185,12 +187,8 @@ def get_title(argument):
     return title, subtitle, subtitle2
 
 def create_coverphoto(background, filename, argument):
-    buddy = False
-    if "buddy" in argument:
-    # Should it be
-    # if "buddy" in (" ").join(argument).split("\"")[0]:
-    # ? Does it matter?
-        buddy = True
+
+    buddy = "buddy" in argument
 
     color = get_color(argument)
     color = ESN_COLORS.get(color, ESN_COLORS["blue"])

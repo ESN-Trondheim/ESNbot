@@ -1,5 +1,8 @@
-def command_list(channel, user):
+import slackutils as slack
+import constants
+
+def command(channel, user, argument, output):
     command_string = ""
-    for command in COMMANDS:
+    for command in constants.COMMANDS:
         command_string = command_string + "`" + command + "`\n"
-    respond_to(channel, user, "Available commands:\n" + command_string)
+    slack.respond_to(channel, user, "Available commands:\n" + command_string)
