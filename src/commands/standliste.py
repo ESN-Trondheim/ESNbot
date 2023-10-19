@@ -1,5 +1,4 @@
-import slackutils as slack
 import os
 
-def command(channel, user, argument, output):
-    slack.respond_to(channel, user, os.environ.get("STAND_LIST"))
+def command(client, channel, user, argument, output):
+    client.respond_to(channel, user, os.environ.get("STAND_LIST"))

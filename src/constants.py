@@ -1,8 +1,5 @@
-import os
+from utils import mention_bot
 import commands as cmd
-
-BOT_ID = os.environ.get("BOT_ID")
-AT_BOT = "" if BOT_ID == None else "<@" + BOT_ID + ">"
 
 READ_WEBSOCKET_DELAY = 1
 
@@ -28,8 +25,8 @@ COMMANDS_HELP = {
     "standliste": "Displays the link to the stand list sheet.",
     "help": (f"Use `help 'command'` to get help using that command.\n"
              f"Some examples include:\n"
-             f">•{AT_BOT} `help`\n"
-             f">•{AT_BOT} `help list`\n"
+             f">•{mention_bot()} `help`\n"
+             f">•{mention_bot()} `help list`\n"
              f"For a list of all available commands, use  `list`"),
 
     "ølstraff": (f"Use `ølstraff 'first name'` to get the standings for `first name`\n"
@@ -55,10 +52,10 @@ COMMANDS_HELP = {
                   f">•`bl` = bottom left\n"
                   f">•`br` = bottom right\n"
                   f"*Examples*\n"
-                  f">{AT_BOT} `watermark` \n"
-                  f">{AT_BOT} `watermark bl`\n"
-                  f">{AT_BOT} `watermark white tl`\n"
-                  f">{AT_BOT} `watermark tr black`\n"),
+                  f">{mention_bot()} `watermark` \n"
+                  f">{mention_bot()} `watermark bl`\n"
+                  f">{mention_bot()} `watermark white tl`\n"
+                  f">{mention_bot()} `watermark tr black`\n"),
 
     "coverphoto": (f"Creates a cover photo for Facebook from the uploaded picture.\n"
                    f"Upload the picture and add a comment *when uploading* with"
@@ -78,10 +75,10 @@ COMMANDS_HELP = {
                    f"If the image is smaller, it will be upscaled and cropped around the "
                    f"center to fit the dimensions.\n"
                    f"*Examples*\n"
-                   f">{AT_BOT} `coverphoto \"Title\"`\n"
-                   f">{AT_BOT} `coverphoto blue \"Title\" \"Subtitle\"`\n"
-                   f">{AT_BOT} `coverphoto buddy \"Title\" \"Subtitle\" \"Subtitle2\"`\n"
-                   f">{AT_BOT} `coverphoto buddy cyan \"Title\" \"Subtitle\"`\n")
+                   f">{mention_bot()} `coverphoto \"Title\"`\n"
+                   f">{mention_bot()} `coverphoto blue \"Title\" \"Subtitle\"`\n"
+                   f">{mention_bot()} `coverphoto buddy \"Title\" \"Subtitle\" \"Subtitle2\"`\n"
+                   f">{mention_bot()} `coverphoto buddy cyan \"Title\" \"Subtitle\"`\n")
 }
 
 IGNORED_MESSAGE_TYPES = [

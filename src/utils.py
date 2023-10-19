@@ -1,4 +1,23 @@
 import time
+import os
+
+def mention_user(user):
+    """
+    Helper function to make it easier to mention users
+
+    :Args:
+
+    `user` the ID of the user
+
+    :Returns:
+
+    A string formatted in a way that will mention the user on Slack
+    """
+    return "<@" + user + ">"
+
+def mention_bot():
+    bot_id = os.environ.get("BOT_ID")
+    return "" if bot_id == None else "<@" + bot_id + ">"
 
 def timestamp():
     """
