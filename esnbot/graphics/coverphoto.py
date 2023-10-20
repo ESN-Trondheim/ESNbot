@@ -27,11 +27,13 @@ ESN_COLORS = {
         "rgb": (46, 49, 146) #2e3192
     }
 }
-DIMENSIONS = (1568, 588)
-ASPECT_RATIO = DIMENSIONS[0] / DIMENSIONS[1]
+FACEBOOK_DIMENSIONS = (1568, 588)
+ESN_ACTIVITIES_DIMENSIONS = (1920, 460)
+
 DEFAULT_BACKGROUND = "default_background.png"
 LOGOS = {
     "regular": Image.open("overlay_regular.png"),
+    "activities": Image.open("overlay_activities.png"),
     "buddy": Image.open("overlay_buddy.png")
 }
 FONTS = { #Fonts to be used for overlayed text
@@ -50,15 +52,21 @@ V_OFFFSETS = { # Vertical offsets of text to be overlayed
         "titleonly": - 6 + 25 + 42, # Offset a bit more when only title
         "subtitle": 90 + 46,
         "subtitle2": 152 + 46
+    },
+    "activities": {
+        "title": - 6,
+        "titleonly": - 6 + 25, # Offset a bit more when only title
+        "subtitle": 70 + 46,
+        "subtitle2": 132 + 46
     }
 }
 
-def create_color_overlay(background, color):
-    img = Image.new(background.mode, DIMENSIONS, color["rgb"])
+def create_color_overlay(background, color, dimensions):
+    img = Image.new(background.mode, dimensions, color["rgb"])
     return img
 
-def blend_color(background, color):
-    overlay = create_color_overlay(background, color)
+def blend_color(background, color, dimensions):
+    overlay = create_color_overlay(background, color, dimensions)
     blended_img = Image.blend(background, overlay, 0.60)
     return blended_img
 
@@ -133,15 +141,15 @@ def get_title(argument):
 
 def create_coverphoto(background, filename, argument):
 
-    buddy = "buddy" in argument
-
+    buddy = False # Turn off buddy overlay - it's against visual identity guidelines
+    dimensions = ESN_ACTIVITIES_DIMENSIONS if "activities" in argument else FACEBOOK_DIMENSIONS 
     color = get_color(argument)
     color = ESN_COLORS.get(color, ESN_COLORS["blue"])
 
     title, subtitle, subtitle2 = get_title(argument)
-    background = resize_background(background)
-    logos = "buddy" if buddy else "regular"
-    cover = overlay_images(blend_color(background, color), LOGOS[logos])
+    background = resize_background(background, dimensions)
+    logos = "activities" if "activities" in argument else "regular"
+    cover = overlay_images(blend_color(background, color, dimensions), LOGOS[logos])
     if subtitle or subtitle2:
         overlay_text(cover, title, FONTS["title"], V_OFFFSETS[logos]["title"])
         overlay_text(cover, subtitle, FONTS["subtitle"], V_OFFFSETS[logos]["subtitle"])
@@ -159,36 +167,37 @@ def open_background_img(filename):
         ext = DEFAULT_BACKGROUND.split(".")[-1]
     return background, ext
 
-def resize_background(background):
-    if background.size == DIMENSIONS:
+def resize_background(background, dimensions):
+    if background.size == dimensions:
         return background
-    if background.size[0] < DIMENSIONS[0] / 1.33 or background.size[1] < DIMENSIONS[1] / 1.33:
+    if background.size[0] < dimensions[0] / 1.33 or background.size[1] < dimensions[1] / 1.33:
         print("Resolution is low. You will get a better result if you have an image with higher resolution.")
     background_aspect_ratio = background.size[0] / background.size[1]
     # TODO the following could probably be a function instead of two almost identical blocks of code
-    if background_aspect_ratio <= ASPECT_RATIO: # background is taller
+    aspect_ratio = dimensions[0] / dimensions[1]
+    if background_aspect_ratio <= aspect_ratio: # background is taller
         print("bg aspect <= aspect ratio")
         print(background_aspect_ratio)
-        resize_ratio = background.size[0] / DIMENSIONS[0]
+        resize_ratio = background.size[0] / dimensions[0]
         new_height = int(background.size[1] / resize_ratio)
         print(background.size)
-        background = background.resize((DIMENSIONS[0], new_height), Image.ANTIALIAS)
+        background = background.resize((dimensions[0], new_height), Image.ANTIALIAS)
         print(background.size)
-        if background.size[1] > DIMENSIONS[1]:
-            padding = (background.size[1] - DIMENSIONS[1]) / 2
-            coords = (0, padding, DIMENSIONS[0], background.size[1] - padding)
+        if background.size[1] > dimensions[1]:
+            padding = (background.size[1] - dimensions[1]) / 2
+            coords = (0, padding, dimensions[0], background.size[1] - padding)
             background = background.crop(coords)
             print(background.size)
     else: # background is wider
         print("bg aspect > aspect ratio")
-        resize_ratio = background.size[1] / DIMENSIONS[1]
+        resize_ratio = background.size[1] / dimensions[1]
         new_width = int(background.size[0] / resize_ratio)
         print(background.size)
-        background = background.resize((new_width, DIMENSIONS[1]), Image.ANTIALIAS)
+        background = background.resize((new_width, dimensions[1]), Image.ANTIALIAS)
         print(background.size)
-        if background.size[0] > DIMENSIONS[0]:
-            padding = (background.size[0] - DIMENSIONS[0]) / 2
-            coords = (padding, 0, background.size[0] - padding, DIMENSIONS[1])
+        if background.size[0] > dimensions[0]:
+            padding = (background.size[0] - dimensions[0]) / 2
+            coords = (padding, 0, background.size[0] - padding, dimensions[1])
             background = background.crop(coords)
             print(background.size)
     return background
