@@ -10,6 +10,7 @@ if __name__ == '__main__':
     if api_call.get('ok'):
         users = api_call.get('members')
         for user in users:
+            print(user['name'], user.get('id'))
             if 'name' in user and user.get('name') == BOT_NAME:
                 print("Bot ID for '" + user['name'] + "' is " + user.get('id'))
     else:
