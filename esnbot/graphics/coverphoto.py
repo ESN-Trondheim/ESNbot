@@ -132,12 +132,8 @@ def get_title(argument):
     return title, subtitle, subtitle2
 
 def create_coverphoto(background, filename, argument):
-    buddy = False
-    if "buddy" in argument:
-    # Should it be
-    # if "buddy" in (" ").join(argument).split("\"")[0]:
-    # ? Does it matter?
-        buddy = True
+
+    buddy = "buddy" in argument
 
     color = get_color(argument)
     color = ESN_COLORS.get(color, ESN_COLORS["blue"])
