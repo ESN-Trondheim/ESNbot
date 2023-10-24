@@ -1,4 +1,7 @@
-name: Python Black
+# This workflow will check if Black will format any files. If yes, the check will fail.
+# See https://black.readthedocs.io/en/stable/integrations/github_actions.html for more information
+
+name: Black
 
 on:
   push:
@@ -7,11 +10,11 @@ on:
     branches: [ "master" ]
 
 jobs:
-  python:
+  black:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: psf/black@stable
         with:
-            options: "--check --verbose"
+            options: "--check --verbose --diff"
             version: "~= 23.0"
