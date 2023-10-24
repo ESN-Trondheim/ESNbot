@@ -16,5 +16,5 @@ jobs:
       - uses: actions/checkout@v3
       - uses: psf/black@stable
         with:
-            options: "--check --verbose --diff"
+            options: "--check --verbose --diff --color"
             version: "~= 23.0"
