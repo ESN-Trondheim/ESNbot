@@ -4,6 +4,7 @@ A set of functions to help command_watermark()
 
 import zipfile
 import os
+import pathlib
 from PIL import Image, ImageFile
 import PIL.ImageOps
 
@@ -96,11 +97,14 @@ def watermark(start_img, argument, filename):
     Default is colors and bottom right corner.
     Then saves the resulting image to `filename` in the same folder the script runs from.
     """
-    white_bg = Image.open("bg.png")
+    white_bg = Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", "bg.png"))
     # Must calculate ratio from white background, the size looks best that way.
     ratio = calculate_ratio(start_img, white_bg)
-    logo = Image.open("logo-" + get_overlay_color(argument) + ".png")
-    if get_overlay_color(argument) == "white":
+
+    overlay_color = get_overlay_color(argument)
+    logo_name = "logo-" + overlay_color + ".png"
+    logo = Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", logo_name))
+    if overlay_color == "white":
         white_bg = invert_bg(white_bg)
 
     white_bg = white_bg.resize(new_overlay_size(white_bg, ratio), Image.ANTIALIAS)
