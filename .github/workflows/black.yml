@@ -1,9 +1,13 @@
 name: Python Black
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
-  python-black:
+  python:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
