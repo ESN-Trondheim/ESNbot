@@ -2,11 +2,7 @@ drivecredentials.json
 notes.txt
 secret-dev.env
 secret-prod.env
-*.jpg
-*.png
 *.code-workspace
-*.ttf
-*.otf
 __pycache__
 .vscode
 log
