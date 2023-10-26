@@ -4,12 +4,12 @@ import commands
 READ_WEBSOCKET_DELAY = 1
 
 COMMANDS = {
-        "list": commands.list,
+        "list": commands.command_list,
         "reimbursement": commands.reimbursement,
         "esnfarger": commands.esnfarger,
         "esnfont": commands.esnfont,
         "standliste": commands.standliste,
-        "help": commands.help,
+        "help": commands.bot_help,
         "ølstraff": commands.vinstraff,
         "vinstraff": commands.vinstraff,
         "kontaktinfo": commands.kontaktinfo,
