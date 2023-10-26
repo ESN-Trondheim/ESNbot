@@ -1,0 +1,26 @@
+# This workflow will check if Black and isort will format any files. If yes, the check will fail.
+# See https://black.readthedocs.io/en/stable/integrations/github_actions.html
+# and https://pycqa.github.io/isort/docs/configuration/github_action.html for more information
+
+name: Formatting
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check formatting with Black
+      uses: psf/black@stable
+      with:
+          options: "--check --verbose"
+          version: "~= 23.0"
+    - name: Check imports with isort
+      uses: isort/isort-action@v1
+      with:
+        requirements-files: "requirements.txt"
