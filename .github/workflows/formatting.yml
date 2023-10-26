@@ -10,6 +10,9 @@ on:
   pull_request:
     branches: [ "master" ]
 
+permissions:
+  contents: read
+
 jobs:
   black:
     runs-on: ubuntu-latest
@@ -18,16 +21,12 @@ jobs:
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
-        python-version: "3.10"
+        python-version: "3.10" # To use latest version, use "*"
     - name: Check formatting with Black
       uses: psf/black@stable
       with:
           options: "--check --verbose"
           version: "~= 23.0"
-    - name: Check imports with isort
-      uses: isort/isort-action@v1
-      with:
-        requirements-files: "requirements.txt"
   isort:
     runs-on: ubuntu-latest
     steps:
@@ -37,6 +36,6 @@ jobs:
       with:
         python-version: "3.10"
     - name: Check imports with isort
-      uses: isort/isort-action@v1
+      uses: isort/isort-action@v1 # --check-only --diff is default
       with:
         requirements-files: "requirements.txt"
