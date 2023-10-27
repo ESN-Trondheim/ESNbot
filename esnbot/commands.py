@@ -6,27 +6,35 @@ from utils import log_to_console
 from utils import mention_user
 import graphics.watermark as wm
 import graphics.coverphoto as cp
+import graphics.instagram_story as story
+
 
 def esnfarger(client, channel, user, argument, output):
     client.respond_to(channel, user,
-               "• ESN Cyan #00aeef\n"
-               + "• ESN Magenta #ec008c\n"
-               + "• ESN Green #7ac143\n"
-               + "• ESN Orange #f47b20\n"
-               + "• ESN Dark Blue #2e3192\n"
-               + "• Black #000000\n"
-               + "• White #ffffff")
-    
+                      "• ESN Cyan #00aeef\n"
+                      + "• ESN Magenta #ec008c\n"
+                      + "• ESN Green #7ac143\n"
+                      + "• ESN Orange #f47b20\n"
+                      + "• ESN Dark Blue #2e3192\n"
+                      + "• Black #000000\n"
+                      + "• White #ffffff")
+
+
 def esnfont(client, channel, user, argument, output):
-    client.respond_to(channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
+    client.respond_to(
+        channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
+
 
 def help(client, channel, user, argument, output):
     if not argument:
         argument.append("help")
     if argument[0].lower() in constants.COMMANDS_HELP:
-        client.respond_to(channel, user, "`" + argument[0].lower() + "`\n" + constants.COMMANDS_HELP[argument[0]])
+        client.respond_to(
+            channel, user, "`" + argument[0].lower() + "`\n" + constants.COMMANDS_HELP[argument[0]])
     else:
-        client.respond_to(channel, user, "I'm not sure what you want help with.")
+        client.respond_to(
+            channel, user, "I'm not sure what you want help with.")
+
 
 def kontaktinfo(client, channel, user, argument, output):
     if not argument:
@@ -34,21 +42,25 @@ def kontaktinfo(client, channel, user, argument, output):
 
     try:
         contact_info_sheet = gsheets.open_spreadsheet("CONTACT_INFO_KEY")
-    except gspread.SpreadsheetNotFound: # Error handling
+    except gspread.SpreadsheetNotFound:  # Error handling
         log_to_console("Spreadsheet not found...")
         client.respond_to(channel, user, "Could not find the spreadsheet.\n"
-                    + "Contact your webmaster for assistance.")
+                          + "Contact your webmaster for assistance.")
         return
-    except TimeoutError: # Error handling
+    except TimeoutError:  # Error handling
         client.respond_to(channel, user, "Could not contact Google Drive, sorry.\n"
-                    + "Try again later.")
+                          + "Try again later.")
         return
 
-    response = gsheets.get_info_from_sheet(argument[0], contact_info_sheet, "Telefon", "E-post")
+    response = gsheets.get_info_from_sheet(
+        argument[0], contact_info_sheet, "Telefon", "E-post")
     if response:
-        client.respond_to(channel, user, response) # Backticks to enclose it in a code block in Slack
+        # Backticks to enclose it in a code block in Slack
+        client.respond_to(channel, user, response)
     else:
-        client.respond_to(channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
+        client.respond_to(
+            channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
+
 
 def list(client, channel, user, argument, output):
     command_string = ""
@@ -56,40 +68,46 @@ def list(client, channel, user, argument, output):
         command_string = command_string + "`" + command + "`\n"
     client.respond_to(channel, user, "Available commands:\n" + command_string)
 
+
 def reimbursement(client, channel, user, argument, output):
     client.respond_to(channel, user, "Reimbursement form: " + os.environ.get("REIMBURSEMENT_FORM")
-               + "\nGuidelines: " + os.environ.get("REIMBURSEMENT_FORM_GUIDELINES"))
+                      + "\nGuidelines: " + os.environ.get("REIMBURSEMENT_FORM_GUIDELINES"))
+
 
 def standliste(client, channel, user, argument, output):
     client.respond_to(channel, user, os.environ.get("STAND_LIST"))
+
 
 def vinstraff(client, channel, user, argument, output):
     if not argument:
         return client.respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
     try:
         beer_wine_sheet = gsheets.open_spreadsheet("BEER_WINE_KEY")
-    except gspread.SpreadsheetNotFound: # Error handling
+    except gspread.SpreadsheetNotFound:  # Error handling
         log_to_console("Spreadsheet not found...")
         client.respond_to(channel, user, "Could not find the spreadsheet.\n"
-                    + "Contact your webmaster for assistance.")
+                          + "Contact your webmaster for assistance.")
         return
-    except TimeoutError: # Error handling
+    except TimeoutError:  # Error handling
         client.respond_to(channel, user, "Could not contact Google Drive, sorry.\n"
-                    + "Try again later.")
+                          + "Try again later.")
         return
 
-    response = gsheets.get_info_from_sheet(argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
+    response = gsheets.get_info_from_sheet(
+        argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
     if response:
         client.respond_to(channel, user, response)
     else:
-        client.respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
+        client.respond_to(
+            channel, user, "Sorry, could not find '" + argument[0] + "'")
+
 
 def watermark(client, channel, user, argument, output):
-    #if output.get('subtype') != "file_share":
+    # if output.get('subtype') != "file_share":
     #    # command_help expects an array containing the help item
     #    # Displays help for watermark if watermark is not called from a file upload
     #    command_help(channel, ["watermark"], user, output)
-    #else:
+    # else:
     log_to_console("Arguments supplied by user: " + str(argument))
     if not output.get('files'):
         # command_help expects an array containing the help item
@@ -100,7 +118,8 @@ def watermark(client, channel, user, argument, output):
                         + "https://pillow.readthedocs.io/en/stable/"
                         + "handbook/image-file-formats.html"
                         + " for a full list of supported file formats.")
-    client.respond_to(channel, user, "I'll get right on it! Your picture(s) will be ready in a jiffy!")
+    client.respond_to(
+        channel, user, "I'll get right on it! Your picture(s) will be ready in a jiffy!")
 
     original_file_id = output['files'][0]['id']
     original_file_url = output['files'][0]['url_private']
@@ -113,14 +132,16 @@ def watermark(client, channel, user, argument, output):
         try:
             all_images_watermarked = wm.watermark_zip(argument, filename)
         except wm.zipfile.BadZipFile:
-            client.respond_to(channel, user, "That does not seem to be a valid zip file.")
+            client.respond_to(
+                channel, user, "That does not seem to be a valid zip file.")
             os.remove(filename)
             return
     else:
         try:
             start_img = wm.Image.open(filename)
         except OSError:
-            client.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
+            client.respond_to(
+                channel, user, "That is not a valid image format.\n" + not_valid_format)
             os.remove(filename)
             client.delete_file(original_file_id)
             return
@@ -129,21 +150,21 @@ def watermark(client, channel, user, argument, output):
     log_to_console("Image(s) watermarked and saved...")
 
     comment = (f"{mention_user(user)}\n"
-                "Here's your picture(s)! Your uploaded picture(s) will now be deleted."
-                "" if all_images_watermarked else (
-                "\nI couldn't open some of the files you sent me,"
-                "probably because they were in a format I can't read.\n"
-                f"{not_valid_format}")
-    )
+               "Here's your picture(s)! Your uploaded picture(s) will now be deleted."
+               "" if all_images_watermarked else (
+                   "\nI couldn't open some of the files you sent me,"
+                   "probably because they were in a format I can't read.\n"
+                   f"{not_valid_format}")
+               )
     client.slack_client.api_call("files.upload", file=open(filename, "rb"),
-                                            channels=channel, initial_comment=comment)
+                                 channels=channel, initial_comment=comment)
     log_to_console("File uploaded...")
     # upload_id is meant for later use, to be able to delete the uploaded picture.
     # upload_id = upload_response['file']['id']
 
-    #"""time.sleep(READ_WEBSOCKET_DELAY)"""
-    #print(file_id, flush=True)
-    #"""slack_client.api_call("files.delete", file=file_id)"""
+    # """time.sleep(READ_WEBSOCKET_DELAY)"""
+    # print(file_id, flush=True)
+    # """slack_client.api_call("files.delete", file=file_id)"""
 
     # this is hacky, and not the intended way to use these tokens, but it works
     # Deletes file from Slack
@@ -152,7 +173,8 @@ def watermark(client, channel, user, argument, output):
     # Deletes file from system
     os.remove(filename)
     log_to_console("File deleted from system...")
-        
+
+
 def coverphoto(client, channel, user, argument, output):
     log_to_console("Arguments supplied by user: " + str(argument))
     if not output.get('files'):
@@ -165,7 +187,7 @@ def coverphoto(client, channel, user, argument, output):
                         + "handbook/image-file-formats.html"
                         + " for a full list of supported file formats.")
     client.respond_to(channel, user,
-                "I'll get right on it! Your cover photo will be ready in a jiffy!")
+                      "I'll get right on it! Your cover photo will be ready in a jiffy!")
 
     original_file_id = output['files'][0]['id']
     original_file_url = output['files'][0]['url_private']
@@ -177,7 +199,8 @@ def coverphoto(client, channel, user, argument, output):
     try:
         background_img = cp.Image.open(filename)
     except OSError:
-        client.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
+        client.respond_to(
+            channel, user, "That is not a valid image format.\n" + not_valid_format)
         os.remove(filename)
         client.delete_file(original_file_id)
         return
@@ -190,7 +213,7 @@ def coverphoto(client, channel, user, argument, output):
         "Please upload the cover photo to the appropriate folder on Google Drive!\n"
     )
     client.slack_client.api_call("files.upload", file=open(filename, "rb"),
-                                            channels=channel, initial_comment=comment)
+                                 channels=channel, initial_comment=comment)
     log_to_console("File uploaded...")
 
     # this is hacky, and not the intended way to use these tokens, but it works
@@ -199,4 +222,55 @@ def coverphoto(client, channel, user, argument, output):
     log_to_console("Original file deleted from client...")
     # Deletes file from system
     os.remove(filename)
+    log_to_console("File deleted from system...")
+
+
+def instagram_story(client, channel, user, argument, output):
+    log_to_console("Arguments supplied by user: " + str(argument))
+    if not output.get('files'):
+        # command_help expects an array containing the help item
+        # Displays help for coverphoto if coverphoto is not called from a file upload
+        return help(client, channel, user, ["instagram_story"], output)
+
+    not_valid_format = ("See "
+                        + "https://pillow.readthedocs.io/en/stable/"
+                        + "handbook/image-file-formats.html"
+                        + " for a full list of supported file formats.")
+    client.respond_to(channel, user,
+                      "I'll get right on it! Your instagram story will be ready in a jiffy!")
+
+    original_file_id = output['files'][0]['id']
+    original_file_url = output['files'][0]['url_private']
+    ext = original_file_url.split(".")[-1]
+    filename = "story." + ext
+    client.download_file(filename, original_file_url)
+    log_to_console("File downloaded...")
+
+    try:
+        background_img = cp.Image.open(filename)
+    except OSError:
+        client.respond_to(
+            channel, user, "That is not a valid image format.\n" + not_valid_format)
+        os.remove(filename)
+        client.delete_file(original_file_id)
+        return
+    story_filename = story.create_story(background_img, argument)
+    log_to_console("Story created and saved...")
+
+    comment = (
+        f"{mention_user(user)}\n"
+        "Here's your instagram story! Your uploaded picture will now be deleted\n"
+        "Please upload the story to the appropriate folder on Google Drive!\n"
+    )
+    client.slack_client.api_call("files.upload", file=open(story_filename, "rb"),
+                                 channels=channel, initial_comment=comment)
+    log_to_console("File uploaded...")
+
+    # this is hacky, and not the intended way to use these tokens, but it works
+    # Deletes file from Slack
+    client.delete_file(original_file_id)
+    log_to_console("Original file deleted from client...")
+    # Deletes file from system
+    os.remove(filename)
+    os.remove(story_filename)
     log_to_console("File deleted from system...")

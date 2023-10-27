@@ -4,18 +4,19 @@ import commands
 READ_WEBSOCKET_DELAY = 1
 
 COMMANDS = {
-        "list": commands.list,
-        "reimbursement": commands.reimbursement,
-        "esnfarger": commands.esnfarger,
-        "esnfont": commands.esnfont,
-        "standliste": commands.standliste,
-        "help": commands.help,
-        "ølstraff": commands.vinstraff,
-        "vinstraff": commands.vinstraff,
-        "kontaktinfo": commands.kontaktinfo,
-        "watermark": commands.watermark,
-        "coverphoto": commands.coverphoto
-    }
+    "list": commands.list,
+    "reimbursement": commands.reimbursement,
+    "esnfarger": commands.esnfarger,
+    "esnfont": commands.esnfont,
+    "standliste": commands.standliste,
+    "help": commands.help,
+    "ølstraff": commands.vinstraff,
+    "vinstraff": commands.vinstraff,
+    "kontaktinfo": commands.kontaktinfo,
+    "watermark": commands.watermark,
+    "coverphoto": commands.coverphoto,
+    "story": commands.instagram_story,
+}
 
 COMMANDS_HELP = {
     "list": "Displays a list of all available commands.",
@@ -31,7 +32,7 @@ COMMANDS_HELP = {
 
     "ølstraff": (f"Use `ølstraff 'first name'` to get the standings for `first name`\n"
                  f"Displays the link to the rules if no name is entered."),
-                 
+
     "vinstraff": (f"Use `vinstraff 'first name'` to get the standings for `first name`\n"
                   f"Displays the link to the rules if no name is entered."),
 
@@ -67,7 +68,7 @@ COMMANDS_HELP = {
                    f"You may enter up to two subtitles.\n"
                    f"If no color is entered, the cover photo will be blue.\n"
                    f"Valid colors are `cyan`, `magenta`, `green`, `orange`,"
-                   f"`blue`.\n" # and `all`. `all` will return a zipped file "
+                   f"`blue`.\n"  # and `all`. `all` will return a zipped file "
                    # f"containing all five color variants.\n"
                    f"For best results, your image should be 1568*588 or larger.\n"
                    f"If the image is larger, it will be cropped around the center "
