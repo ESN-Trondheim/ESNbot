@@ -94,7 +94,7 @@ def watermark(client, channel, user, argument, output):
     if not output.get('files'):
         # command_help expects an array containing the help item
         # Displays help for watermark if watermark is not called from a file upload
-        return help(client, channel, user, ["watermark"], output)
+        return bot_help(client, channel, user, ["watermark"], output)
 
     not_valid_format = ("See "
                         + "https://pillow.readthedocs.io/en/stable/"
@@ -158,7 +158,7 @@ def coverphoto(client, channel, user, argument, output):
     if not output.get('files'):
         # command_help expects an array containing the help item
         # Displays help for coverphoto if coverphoto is not called from a file upload
-        return help(client, channel, user, ["coverphoto"], output)
+        return bot_help(client, channel, user, ["coverphoto"], output)
 
     not_valid_format = ("See "
                         + "https://pillow.readthedocs.io/en/stable/"
