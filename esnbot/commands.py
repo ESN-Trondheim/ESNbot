@@ -25,7 +25,7 @@ def esnfont(client, channel, user, argument, output):
         channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
 
 
-def help(client, channel, user, argument, output):
+def bot_help(client, channel, user, argument, output):
     if not argument:
         argument.append("help")
     if argument[0].lower() in constants.COMMANDS_HELP:
@@ -62,7 +62,7 @@ def kontaktinfo(client, channel, user, argument, output):
             channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
 
 
-def list(client, channel, user, argument, output):
+def command_list(client, channel, user, argument, output):
     command_string = ""
     for command in constants.COMMANDS:
         command_string = command_string + "`" + command + "`\n"
@@ -112,7 +112,7 @@ def watermark(client, channel, user, argument, output):
     if not output.get('files'):
         # command_help expects an array containing the help item
         # Displays help for watermark if watermark is not called from a file upload
-        return help(client, channel, user, ["watermark"], output)
+        return bot_help(client, channel, user, ["watermark"], output)
 
     not_valid_format = ("See "
                         + "https://pillow.readthedocs.io/en/stable/"
@@ -180,7 +180,7 @@ def coverphoto(client, channel, user, argument, output):
     if not output.get('files'):
         # command_help expects an array containing the help item
         # Displays help for coverphoto if coverphoto is not called from a file upload
-        return help(client, channel, user, ["coverphoto"], output)
+        return bot_help(client, channel, user, ["coverphoto"], output)
 
     not_valid_format = ("See "
                         + "https://pillow.readthedocs.io/en/stable/"

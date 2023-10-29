@@ -3,6 +3,7 @@ A script to automate the creation of cover photos for Facebook
 TODO default to an image if no image is suppplied
 """
 
+import pathlib
 from PIL import Image, ImageDraw, ImageFont
 from common import resize_background, ESN_COLORS, get_color, get_title
 
@@ -10,15 +11,16 @@ from common import resize_background, ESN_COLORS, get_color, get_title
 FACEBOOK_DIMENSIONS = (1568, 588)
 ESN_ACTIVITIES_DIMENSIONS = (1920, 460)
 
-DEFAULT_BACKGROUND = "default_background.png"
+DEFAULT_BACKGROUND = pathlib.Path.cwd().joinpath(
+    "assets", "default_background.png")
 LOGOS = {
-    "regular": Image.open("overlay_regular.png"),
-    "activities": Image.open("overlay_activities.png"),
-    "buddy": Image.open("overlay_buddy.png")
+    "regular": Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", "overlay_regular.png")),
+    "activities": Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", "overlay_activities.png")),
+    "buddy": Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", "overlay_buddy.png"))
 }
-FONTS = {  # Fonts to be used for overlayed text
-    "title": ImageFont.truetype("Kelson Sans Bold.otf", 90),
-    "subtitle": ImageFont.truetype("Kelson Sans Bold.otf", 50)
+FONTS = {  # Fonts to be used for overlayed text. Converting path to str, truetype doesn't accept path object
+    "title": ImageFont.truetype(str(pathlib.Path.cwd().joinpath("esnbot", "assets", "Kelson Sans Bold.otf")), 90),
+    "subtitle": ImageFont.truetype(str(pathlib.Path.cwd().joinpath("esnbot", "assets", "Kelson Sans Bold.otf")), 50)
 }
 V_OFFFSETS = {  # Vertical offsets of text to be overlayed
     "regular": {
@@ -99,5 +101,5 @@ def open_background_img(filename):
         ext = filename.split(".")[-1]
     except OSError:
         background = Image.open(DEFAULT_BACKGROUND)
-        ext = DEFAULT_BACKGROUND.split(".")[-1]
+        ext = background.format
     return background, ext
