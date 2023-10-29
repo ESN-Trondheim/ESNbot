@@ -48,7 +48,7 @@ def kontaktinfo(client, channel, user, argument, output):
     if response:
         client.respond_to(channel, user, response) # Backticks to enclose it in a code block in Slack
     else:
-        client.respond_to(channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
+        client.respond_to(channel, user, f"Sorry, could not find anyone named '{argument[0]}'")
 
 def command_list(client, channel, user, argument, output):
     command_string = ""
@@ -82,7 +82,7 @@ def vinstraff(client, channel, user, argument, output):
     if response:
         client.respond_to(channel, user, response)
     else:
-        client.respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
+        client.respond_to(channel, user, f"Sorry, could not find anyone named '{argument[0]}'")
 
 def watermark(client, channel, user, argument, output):
     #if output.get('subtype') != "file_share":
@@ -90,7 +90,7 @@ def watermark(client, channel, user, argument, output):
     #    # Displays help for watermark if watermark is not called from a file upload
     #    command_help(channel, ["watermark"], user, output)
     #else:
-    log_to_console("Arguments supplied by user: " + str(argument))
+    log_to_console(f"Arguments supplied by user: {str(argument)}")
     if not output.get('files'):
         # command_help expects an array containing the help item
         # Displays help for watermark if watermark is not called from a file upload
@@ -154,7 +154,7 @@ def watermark(client, channel, user, argument, output):
     log_to_console("File deleted from system...")
         
 def coverphoto(client, channel, user, argument, output):
-    log_to_console("Arguments supplied by user: " + str(argument))
+    log_to_console(f"Arguments supplied by user: {str(argument)}")
     if not output.get('files'):
         # command_help expects an array containing the help item
         # Displays help for coverphoto if coverphoto is not called from a file upload

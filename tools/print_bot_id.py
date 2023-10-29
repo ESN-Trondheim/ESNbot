@@ -10,9 +10,9 @@ if __name__ == '__main__':
     if api_call.get('ok'):
         users = api_call.get('members')
         for user in users:
-            print(user['name'], user.get('id'))
+            print(f"{user['name']}, {user.get('id')}")
             if 'name' in user and user.get('name') == BOT_NAME:
-                print("Bot ID for '" + user['name'] + "' is " + user.get('id'))
+                print(f"Bot ID for '{user['name']}' is {user.get('id')}")
     else:
-        print("Could not find bot user with the name " + BOT_NAME)
+        print(f"Could not find bot user with the name {BOT_NAME}")
         
