@@ -25,6 +25,7 @@ def esnfarger(client, channel, user, argument, output):
 def esnfont(client, channel, user, argument, output):
     client.respond_to(channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
 
+
 def bot_help(client, channel, user, argument, output):
     if not argument:
         argument.append("help")
@@ -63,6 +64,7 @@ def kontaktinfo(client, channel, user, argument, output):
         )  # Backticks to enclose it in a code block in Slack
     else:
         client.respond_to(channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
+
 
 def command_list(client, channel, user, argument, output):
     command_string = ""
