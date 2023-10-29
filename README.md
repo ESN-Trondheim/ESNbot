@@ -55,7 +55,7 @@ For members of the [ESN-Trondheim organisation](https://github.com/ESN-Trondheim
 
 All [checks](https://github.com/ESN-Trondheim/ESNbot/actions) MUST pass for a PR to be accepted.
 
-This project the [black](https://github.com/psf/black) code style, with a line length of 100. We also use [isort](https://pycqa.github.io/isort/) for sorting of imports. isort is used with the black profile, a line length of 100 and skip_gitignore = "true".
+This project the [Black](https://github.com/psf/black) code style (which is a [PEP 8](https://peps.python.org/pep-0008/) compliant opinionated formatter), with a line length of 100. We also use [isort](https://pycqa.github.io/isort/) for sorting of imports. isort is used with the black profile, a line length of 100 and skip_gitignore = "true".
 Note that this requires git to be installed on your system. If you don't have git installed (you should!), then you should specify exactly which files to run isort on, instead of using `.` to run on all files in the directory.
 These settings are configured in `pyproject.toml` and should be picked up if you run both tools from the root directory of this project.
 
