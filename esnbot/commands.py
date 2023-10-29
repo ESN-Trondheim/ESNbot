@@ -18,13 +18,13 @@ def esnfarger(client, channel, user, argument, output):
                + "• White #ffffff")
     
 def esnfont(client, channel, user, argument, output):
-    client.respond_to(channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
+    client.respond_to(f"{channel}, {user}, Display font: Kelson Sans\n Content font: Lato")
 
 def bot_help(client, channel, user, argument, output):
     if not argument:
         argument.append("help")
     if argument[0].lower() in constants.COMMANDS_HELP:
-        client.respond_to(channel, user, "`" + argument[0].lower() + "`\n" + constants.COMMANDS_HELP[argument[0]])
+        client.respond_to(channel, user, f"`{argument[0].lower()}`\n {constants.COMMANDS_HELP[argument[0]]}")
     else:
         client.respond_to(channel, user, "I'm not sure what you want help with.")
 
@@ -36,12 +36,10 @@ def kontaktinfo(client, channel, user, argument, output):
         contact_info_sheet = gsheets.open_spreadsheet("CONTACT_INFO_KEY")
     except gspread.SpreadsheetNotFound: # Error handling
         log_to_console("Spreadsheet not found...")
-        client.respond_to(channel, user, "Could not find the spreadsheet.\n"
-                    + "Contact your webmaster for assistance.")
+        client.respond_to(channel, user, f"Could not find the spreadsheet.\n Contact your webmaster for assistance.")
         return
     except TimeoutError: # Error handling
-        client.respond_to(channel, user, "Could not contact Google Drive, sorry.\n"
-                    + "Try again later.")
+        client.respond_to(channel, user, f"Could not contact Google Drive, sorry.\n Try again later.")
         return
 
     response = gsheets.get_info_from_sheet(argument[0], contact_info_sheet, "Telefon", "E-post")
@@ -54,11 +52,11 @@ def command_list(client, channel, user, argument, output):
     command_string = ""
     for command in constants.COMMANDS:
         command_string = command_string + "`" + command + "`\n"
-    client.respond_to(channel, user, "Available commands:\n" + command_string)
+    client.respond_to(channel, user, f"Available commands:\n {command_string}")
 
 def reimbursement(client, channel, user, argument, output):
-    client.respond_to(channel, user, "Reimbursement form: " + os.environ.get("REIMBURSEMENT_FORM")
-               + "\nGuidelines: " + os.environ.get("REIMBURSEMENT_FORM_GUIDELINES"))
+    client.respond_to(channel, user, f'Reimbursement form: {os.environ.get("REIMBURSEMENT_FORM")},
+                \nGuidelines: {os.environ.get("REIMBURSEMENT_FORM_GUIDELINES")}')
 
 def standliste(client, channel, user, argument, output):
     client.respond_to(channel, user, os.environ.get("STAND_LIST"))
@@ -70,12 +68,10 @@ def vinstraff(client, channel, user, argument, output):
         beer_wine_sheet = gsheets.open_spreadsheet("BEER_WINE_KEY")
     except gspread.SpreadsheetNotFound: # Error handling
         log_to_console("Spreadsheet not found...")
-        client.respond_to(channel, user, "Could not find the spreadsheet.\n"
-                    + "Contact your webmaster for assistance.")
+        client.respond_to(channel, user, f"Could not find the spreadsheet.\n Contact your webmaster for assistance.")
         return
     except TimeoutError: # Error handling
-        client.respond_to(channel, user, "Could not contact Google Drive, sorry.\n"
-                    + "Try again later.")
+        client.respond_to(channel, user, f"Could not contact Google Drive, sorry.\n Try again later.")
         return
 
     response = gsheets.get_info_from_sheet(argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
@@ -120,7 +116,7 @@ def watermark(client, channel, user, argument, output):
         try:
             start_img = wm.Image.open(filename)
         except OSError:
-            client.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
+            client.respond_to(channel, user, f"That is not a valid image format.\n {not_valid_format}")
             os.remove(filename)
             client.delete_file(original_file_id)
             return
@@ -177,7 +173,7 @@ def coverphoto(client, channel, user, argument, output):
     try:
         background_img = cp.Image.open(filename)
     except OSError:
-        client.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
+        client.respond_to(channel, user, f"That is not a valid image format.\n {not_valid_format}")
         os.remove(filename)
         client.delete_file(original_file_id)
         return

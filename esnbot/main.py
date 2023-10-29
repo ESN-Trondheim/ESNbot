@@ -28,8 +28,8 @@ class BotClient:
           Main function
       """
       if self.slack_client.rtm_connect(auto_reconnect=True, with_team_state=False):
-          log_to_file_and_console("log" + os.sep + "connected.log",
-                                  "ESNbot connected and running...", "w")
+          log_to_file_and_console(f"log {os.sep} connected.log,
+                                  ESNbot connected and running..., w")
           while True:
               try:
                   text, channel, user, output = self.parse_slack_output(self.slack_client.rtm_read(), LOGGERS)
@@ -115,12 +115,12 @@ class BotClient:
         Nothing
         """
         if not text:
-            self.respond_to(channel, user, "You tagged me! Try " + mention_bot() + " `list` to get started.")
+            self.respond_to(channel, user, f"You tagged me! Try {mention_bot()} `list` to get started.")
             return
 
         text = text.split()
         command = text[0].lower()
-        log_to_console("Command used was '" + command + "'")
+        log_to_console(f"Command used was '{command}'")
 
         arguments = text[1:] # I think this is clearer than passing on a modified text array
         self.choose_command(command, arguments, channel, user, output)
@@ -179,9 +179,9 @@ class BotClient:
         `user` the ID of the user the message should be directed at.
         """
         if kwargs.get("ephemeral", False):
-            self.post_ephemeral_message(channel, user, mention_user(user) + "\n" + message)
+            self.post_ephemeral_message(channel, user, f"{mention_user(user)} \n {message}")
             return
-        self.post_message(channel, mention_user(user) + "\n" + message)
+        self.post_message(channel, f"{mention_user(user)} \n {message}")
 
     def download_file(self, filename, url):
         """
