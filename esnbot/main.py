@@ -129,8 +129,20 @@ class BotClient:
         command = text[0].lower()
         log_to_console("Command used was '" + command + "'")
 
-        arguments = text[1:]  # I think this is clearer than passing on a modified text array
-        self.choose_command(command, arguments, channel, user, output)
+        # I think this is clearer than passing on a modified text array
+        arguments = text[1:]
+        try:
+            self.choose_command(command, arguments, channel, user, output)
+        except Exception as exc:
+            print(traceback.format_exc())
+            print("Stacktrace printed above this line.")
+            LOGGERS["stacktrace"].error(str(exc))
+            LOGGERS["stacktrace"].error(traceback.format_exc())
+            self.respond_to(
+                channel,
+                user,
+                "Something went wrong while executing your command.\nPlease try again. 😅",
+            )
 
     def choose_command(self, command, arguments, channel, user, output):
         """
