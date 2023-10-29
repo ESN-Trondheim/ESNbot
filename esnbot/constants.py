@@ -4,18 +4,18 @@ from utils import mention_bot
 READ_WEBSOCKET_DELAY = 1
 
 COMMANDS = {
-    "list": commands.list,
-    "reimbursement": commands.reimbursement,
-    "esnfarger": commands.esnfarger,
-    "esnfont": commands.esnfont,
-    "standliste": commands.standliste,
-    "help": commands.help,
-    "ølstraff": commands.vinstraff,
-    "vinstraff": commands.vinstraff,
-    "kontaktinfo": commands.kontaktinfo,
-    "watermark": commands.watermark,
-    "coverphoto": commands.coverphoto,
-}
+        "list": commands.command_list,
+        "reimbursement": commands.reimbursement,
+        "esnfarger": commands.esnfarger,
+        "esnfont": commands.esnfont,
+        "standliste": commands.standliste,
+        "help": commands.bot_help,
+        "ølstraff": commands.vinstraff,
+        "vinstraff": commands.vinstraff,
+        "kontaktinfo": commands.kontaktinfo,
+        "watermark": commands.watermark,
+        "coverphoto": commands.coverphoto
+    }
 
 COMMANDS_HELP = {
     "list": "Displays a list of all available commands.",
