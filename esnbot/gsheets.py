@@ -1,7 +1,8 @@
+import os
+
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from utils import log_to_console
-import os
 
 # gspread
 SCOPE = ["https://spreadsheets.google.com/feeds"]

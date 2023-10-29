@@ -4,6 +4,7 @@ TODO default to an image if no image is suppplied
 """
 
 import pathlib
+
 from PIL import Image, ImageDraw, ImageFont
 
 ESN_COLORS = {

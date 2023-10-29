@@ -1,5 +1,5 @@
-import time
 import os
+import time
 
 
 def mention_user(user):

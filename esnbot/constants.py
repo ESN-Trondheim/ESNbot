@@ -1,5 +1,5 @@
-from utils import mention_bot
 import commands
+from utils import mention_bot
 
 READ_WEBSOCKET_DELAY = 1
 

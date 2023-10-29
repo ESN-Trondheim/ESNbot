@@ -2,11 +2,12 @@
 A set of functions to help command_watermark()
 """
 
-import zipfile
 import os
 import pathlib
-from PIL import Image, ImageFile
+import zipfile
+
 import PIL.ImageOps
+from PIL import Image, ImageFile
 
 # Make sure big images also load
 ImageFile.LOAD_TRUNCATED_IMAGES = True

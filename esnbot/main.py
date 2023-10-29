@@ -2,19 +2,19 @@
     A slack bot to help ESN Trondheim
 """
 
-import os
-import time
 import logging
-from logging.handlers import RotatingFileHandler
-import traceback
-import sys
+import os
 import pathlib
+import sys
+import time
+import traceback
+from logging.handlers import RotatingFileHandler
+
+import constants
 import dotenv
 import requests
 from slackclient import SlackClient
-
-import constants
-from utils import log_to_console, log_to_file_and_console, mention_user, mention_bot
+from utils import log_to_console, log_to_file_and_console, mention_bot, mention_user
 
 
 class BotClient:
