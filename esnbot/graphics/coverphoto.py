@@ -7,26 +7,11 @@ import pathlib
 from PIL import Image, ImageDraw, ImageFont
 
 ESN_COLORS = {
-    "cyan": {
-        "name": "cyan",
-        "rgb": (0, 174, 239) #00aeef
-    },
-    "magenta": {
-        "name": "magenta",
-        "rgb": (236, 0, 140) #ec008c
-    },
-    "green": {
-        "name": "green",
-        "rgb": (122, 193, 67) #7ac143
-    },
-    "orange": {
-        "name": "orange",
-        "rgb": (244, 123, 32) #f47b20
-    },
-    "blue": { # proper name is dark blue
-        "name": "dark blue",
-        "rgb": (46, 49, 146) #2e3192
-    }
+    "cyan": {"name": "cyan", "rgb": (0, 174, 239)},  # 00aeef
+    "magenta": {"name": "magenta", "rgb": (236, 0, 140)},  # ec008c
+    "green": {"name": "green", "rgb": (122, 193, 67)},  # 7ac143
+    "orange": {"name": "orange", "rgb": (244, 123, 32)},  # f47b20
+    "blue": {"name": "dark blue", "rgb": (46, 49, 146)},  # proper name is dark blue  # 2e3192
 }
 FACEBOOK_DIMENSIONS = (1568, 588)
 ESN_ACTIVITIES_DIMENSIONS = (1920, 460)
@@ -34,42 +19,51 @@ ESN_ACTIVITIES_DIMENSIONS = (1920, 460)
 DEFAULT_BACKGROUND = pathlib.Path.cwd().joinpath("assets", "default_background.png")
 LOGOS = {
     "regular": Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", "overlay_regular.png")),
-    "activities": Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", "overlay_activities.png")),
-    "buddy": Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", "overlay_buddy.png"))
+    "activities": Image.open(
+        pathlib.Path.cwd().joinpath("esnbot", "assets", "overlay_activities.png")
+    ),
+    "buddy": Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", "overlay_buddy.png")),
 }
-FONTS = { #Fonts to be used for overlayed text. Converting path to str, truetype doesn't accept path object
-    "title": ImageFont.truetype(str(pathlib.Path.cwd().joinpath("esnbot", "assets", "Kelson Sans Bold.otf")), 90),
-    "subtitle": ImageFont.truetype(str(pathlib.Path.cwd().joinpath("esnbot", "assets", "Kelson Sans Bold.otf")), 50)
+FONTS = {  # Fonts to be used for overlayed text. Converting path to str, truetype doesn't accept path object
+    "title": ImageFont.truetype(
+        str(pathlib.Path.cwd().joinpath("esnbot", "assets", "Kelson Sans Bold.otf")), 90
+    ),
+    "subtitle": ImageFont.truetype(
+        str(pathlib.Path.cwd().joinpath("esnbot", "assets", "Kelson Sans Bold.otf")), 50
+    ),
 }
-V_OFFFSETS = { # Vertical offsets of text to be overlayed
+V_OFFFSETS = {  # Vertical offsets of text to be overlayed
     "regular": {
-        "title": - 6,
-        "titleonly": - 6 + 25, # Offset a bit more when only title
+        "title": -6,
+        "titleonly": -6 + 25,  # Offset a bit more when only title
         "subtitle": 90,
-        "subtitle2": 152
+        "subtitle2": 152,
     },
     "buddy": {
-        "title": - 6 + 44,
-        "titleonly": - 6 + 25 + 42, # Offset a bit more when only title
+        "title": -6 + 44,
+        "titleonly": -6 + 25 + 42,  # Offset a bit more when only title
         "subtitle": 90 + 46,
-        "subtitle2": 152 + 46
+        "subtitle2": 152 + 46,
     },
     "activities": {
-        "title": - 6,
-        "titleonly": - 6 + 25, # Offset a bit more when only title
+        "title": -6,
+        "titleonly": -6 + 25,  # Offset a bit more when only title
         "subtitle": 70 + 46,
-        "subtitle2": 132 + 46
-    }
+        "subtitle2": 132 + 46,
+    },
 }
+
 
 def create_color_overlay(background, color, dimensions):
     img = Image.new(background.mode, dimensions, color["rgb"])
     return img
 
+
 def blend_color(background, color, dimensions):
     overlay = create_color_overlay(background, color, dimensions)
     blended_img = Image.blend(background, overlay, 0.60)
     return blended_img
+
 
 def overlay_images(background, overlay):
     # TODO figure out this mess. I think it's actually most simple to just switch mode. alpha_composite requires both images to have an alpha channel
@@ -79,20 +73,27 @@ def overlay_images(background, overlay):
     # background = Image.alpha_composite(background, overlay) # this is simpler, and works just as good
     return background
 
+
 def overlay_text(background, text, font, offset):
     draw = ImageDraw.Draw(background)
     width, height = draw.textsize(text, font)
-    draw.text(((background.size[0] - width) / 2, (background.size[1] - height) / 2 + offset), text, font=font)
+    draw.text(
+        ((background.size[0] - width) / 2, (background.size[1] - height) / 2 + offset),
+        text,
+        font=font,
+    )
+
 
 def get_color(argument):
     if argument:
-        args = (" ").join(argument).split("\"")[0] # Only care about what's before titles
+        args = (" ").join(argument).split('"')[0]  # Only care about what's before titles
         # if "all" in args:
         #     pass
         for color_key in ESN_COLORS:
             if color_key in args:
                 return color_key
     return "blue"
+
 
 def get_title(argument):
     title = "Title"
@@ -107,10 +108,10 @@ def get_title(argument):
         argument = " ".join(argument)
         # I think the below is clearer than above, though it might not cover weird edge cases.
         # I still think this is better.
-        argument = argument.replace("“", "\"")
-        argument = argument.replace("”", "\"")
-        argument = argument.replace("«", "\"")
-        argument = argument.replace("»", "\"")
+        argument = argument.replace("“", '"')
+        argument = argument.replace("”", '"')
+        argument = argument.replace("«", '"')
+        argument = argument.replace("»", '"')
         # https://stackoverflow.com/questions/2076343/extract-string-from-between-quotations
         # Extracts every other item from the list, starting at index 1.
         # Example:
@@ -124,7 +125,7 @@ def get_title(argument):
         # the titles/subtitles don't come directly after each other.
         # Still returns something if the number of quotes is odd,
         # but may not return what the user is expecting. This is an input error from the user.
-        titles = argument.split("\"")[1::2]
+        titles = argument.split('"')[1::2]
         print(titles)
         try:
             title = titles[0]
@@ -140,10 +141,10 @@ def get_title(argument):
             pass
     return title, subtitle, subtitle2
 
-def create_coverphoto(background, filename, argument):
 
-    buddy = False # Turn off buddy overlay - it's against visual identity guidelines
-    dimensions = ESN_ACTIVITIES_DIMENSIONS if "activities" in argument else FACEBOOK_DIMENSIONS 
+def create_coverphoto(background, filename, argument):
+    buddy = False  # Turn off buddy overlay - it's against visual identity guidelines
+    dimensions = ESN_ACTIVITIES_DIMENSIONS if "activities" in argument else FACEBOOK_DIMENSIONS
     color = get_color(argument)
     color = ESN_COLORS.get(color, ESN_COLORS["blue"])
 
@@ -157,7 +158,8 @@ def create_coverphoto(background, filename, argument):
         overlay_text(cover, subtitle2, FONTS["subtitle"], V_OFFFSETS[logos]["subtitle2"])
     else:
         overlay_text(cover, title, FONTS["title"], V_OFFFSETS[logos]["titleonly"])
-    cover.save(filename, quality=95) #quality only affects jpg images
+    cover.save(filename, quality=95)  # quality only affects jpg images
+
 
 def open_background_img(filename):
     try:
@@ -168,15 +170,18 @@ def open_background_img(filename):
         ext = background.format
     return background, ext
 
+
 def resize_background(background, dimensions):
     if background.size == dimensions:
         return background
     if background.size[0] < dimensions[0] / 1.33 or background.size[1] < dimensions[1] / 1.33:
-        print("Resolution is low. You will get a better result if you have an image with higher resolution.")
+        print(
+            "Resolution is low. You will get a better result if you have an image with higher resolution."
+        )
     background_aspect_ratio = background.size[0] / background.size[1]
     # TODO the following could probably be a function instead of two almost identical blocks of code
     aspect_ratio = dimensions[0] / dimensions[1]
-    if background_aspect_ratio <= aspect_ratio: # background is taller
+    if background_aspect_ratio <= aspect_ratio:  # background is taller
         print("bg aspect <= aspect ratio")
         print(background_aspect_ratio)
         resize_ratio = background.size[0] / dimensions[0]
@@ -189,7 +194,7 @@ def resize_background(background, dimensions):
             coords = (0, padding, dimensions[0], background.size[1] - padding)
             background = background.crop(coords)
             print(background.size)
-    else: # background is wider
+    else:  # background is wider
         print("bg aspect > aspect ratio")
         resize_ratio = background.size[1] / dimensions[1]
         new_width = int(background.size[0] / resize_ratio)

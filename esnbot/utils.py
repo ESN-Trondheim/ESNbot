@@ -1,6 +1,7 @@
 import time
 import os
 
+
 def mention_user(user):
     """
     Helper function to make it easier to mention users
@@ -15,15 +16,18 @@ def mention_user(user):
     """
     return "<@" + user + ">"
 
+
 def mention_bot():
     bot_id = os.environ.get("BOT_ID")
     return "" if bot_id == None else "<@" + bot_id + ">"
+
 
 def timestamp():
     """
     Returns a timestamp formatted properly as a string.
     """
     return time.strftime("%d-%m-%Y %H:%M:%S: ", time.localtime())
+
 
 def log_to_console(text):
     """
@@ -32,6 +36,7 @@ def log_to_console(text):
     """
     print(timestamp() + text, flush=True)
 
+
 def log_to_file(filename, message, mode):
     """
     Helper function to log things to textfile.
@@ -39,6 +44,7 @@ def log_to_file(filename, message, mode):
     """
     with open(filename, mode) as file:
         file.write(timestamp() + message + "\n")
+
 
 def log_to_file_and_console(filename, message, mode):
     """

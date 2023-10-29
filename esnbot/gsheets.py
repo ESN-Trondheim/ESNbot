@@ -4,14 +4,18 @@ from utils import log_to_console
 import os
 
 # gspread
-SCOPE = ['https://spreadsheets.google.com/feeds']
-CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name(os.getcwd() + os.sep + "setup" + os.sep + "drivecredentials.json", SCOPE)
+SCOPE = ["https://spreadsheets.google.com/feeds"]
+CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name(
+    os.getcwd() + os.sep + "setup" + os.sep + "drivecredentials.json", SCOPE
+)
+
 
 def open_spreadsheet(sheet_key):
     gsheet = gspread.authorize(CREDENTIALS)
     contact_info_sheet = gsheet.open_by_key(os.environ.get(sheet_key)).sheet1
     log_to_console("Spreadsheet opened...")
     return contact_info_sheet.get_all_records()
+
 
 def get_info_from_sheet(name, sheet, *args):
     response_list = []

@@ -17,45 +17,48 @@ import constants
 from utils import log_to_console, log_to_file_and_console, mention_user, mention_bot
 
 
-
-
 class BotClient:
     def __init__(self):
-        self.slack_client = SlackClient(os.environ.get("SLACK_BOT_TOKEN")) #pylint: disable=invalid-name
+        self.slack_client = SlackClient(
+            os.environ.get("SLACK_BOT_TOKEN")
+        )  # pylint: disable=invalid-name
 
     def run(self):
-      """
-          Main function
-      """
-      if self.slack_client.rtm_connect(auto_reconnect=True, with_team_state=False):
-          log_to_file_and_console("log" + os.sep + "connected.log",
-                                  "ESNbot connected and running...", "w")
-          while True:
-              try:
-                  text, channel, user, output = self.parse_slack_output(self.slack_client.rtm_read(), LOGGERS)
-              except TimeoutError:
-                  LOGGERS["reconnect"].info("Session timed out [TimeoutError].")
-                  log_to_console("Session timed out [TimeoutError].")
-                  LOGGERS["reconnect"].info("Initiating new session...")
-                  log_to_console("Initiating new session...")
-                  if self.slack_client.rtm_connect(auto_reconnect=True, with_team_state=False):
-                      LOGGERS["reconnect"].info("ESNbot reconnected and running...")
-                      log_to_console("ESNbot reconnected and running...")
-                  else:
-                      LOGGERS["reconnect"].error("Reconnection failed.")
-                      log_to_console("Reconnection failed.")
-              except Exception as exc:
-                  LOGGERS["stacktrace"].error(str(exc))
-                  LOGGERS["stacktrace"].error(traceback.format_exc())
-                  # traceback.print_exc() # Probably don't need to print it twice.
-                                        # Unsure how it looks if it's exception inside exception.
-                  return
-              if channel:
-                  self.handle_command(text, channel, user, output)
-              time.sleep(constants.READ_WEBSOCKET_DELAY)
-      else:
-          log_to_console("Connection failed.")
-    
+        """
+        Main function
+        """
+        if self.slack_client.rtm_connect(auto_reconnect=True, with_team_state=False):
+            log_to_file_and_console(
+                "log" + os.sep + "connected.log", "ESNbot connected and running...", "w"
+            )
+            while True:
+                try:
+                    text, channel, user, output = self.parse_slack_output(
+                        self.slack_client.rtm_read(), LOGGERS
+                    )
+                except TimeoutError:
+                    LOGGERS["reconnect"].info("Session timed out [TimeoutError].")
+                    log_to_console("Session timed out [TimeoutError].")
+                    LOGGERS["reconnect"].info("Initiating new session...")
+                    log_to_console("Initiating new session...")
+                    if self.slack_client.rtm_connect(auto_reconnect=True, with_team_state=False):
+                        LOGGERS["reconnect"].info("ESNbot reconnected and running...")
+                        log_to_console("ESNbot reconnected and running...")
+                    else:
+                        LOGGERS["reconnect"].error("Reconnection failed.")
+                        log_to_console("Reconnection failed.")
+                except Exception as exc:
+                    LOGGERS["stacktrace"].error(str(exc))
+                    LOGGERS["stacktrace"].error(traceback.format_exc())
+                    # traceback.print_exc() # Probably don't need to print it twice.
+                    # Unsure how it looks if it's exception inside exception.
+                    return
+                if channel:
+                    self.handle_command(text, channel, user, output)
+                time.sleep(constants.READ_WEBSOCKET_DELAY)
+        else:
+            log_to_console("Connection failed.")
+
     def parse_slack_output(self, slack_rtm_output, LOGGERS):
         """
         Parses messages written in channels that the bot is a part of.
@@ -73,31 +76,33 @@ class BotClient:
         if output_list:
             for output in output_list:
                 LOGGERS["output"].debug(str(output))
-                if output['type'] not in constants.IGNORED_MESSAGE_TYPES:
+                if output["type"] not in constants.IGNORED_MESSAGE_TYPES:
                     # maybe make this filter out ephemeral messages as well, like google drive messages
                     log_to_console(str(output) + "\n")
-                if output['type'] == 'goodbye':
+                if output["type"] == "goodbye":
                     LOGGERS["output"].info("Session ended. ('goodbye' event)")
                     log_to_console("Session ended. ('goodbye' event)")
                     LOGGERS["output"].info("Initiating new session... ('goodbye' event)")
                     log_to_console("Initiating new session... ('goodbye' event)")
                     if self.slack_client.rtm_connect(auto_reconnect=True):
-                        LOGGERS["output"].info("ESNbot reconnected and running... ('goodbye' event)")
+                        LOGGERS["output"].info(
+                            "ESNbot reconnected and running... ('goodbye' event)"
+                        )
                         log_to_console("ESNbot reconnected and running... ('goodbye' event)")
                     else:
                         LOGGERS["output"].error("Reconnection failed.")
                         log_to_console("Reconnection failed. ('goodbye' event)")
-                if output and 'text' in output and mention_bot() in output['text']:
-                    text = output['text'].split(mention_bot())[1].strip()
-                    if output.get('subtype') == "file_comment":
-                        return (text, output['channel'], output['file']['user'], output)
-                    #futureproofing if the bot will ever respond to file comments as a file comment.
-                    #or output.get('file').get('user') == BOT_ID
-                    #this does not work if 'file' does not exist. 'file' is then None,
-                    #and you can't call get() on a NoneType object
-                    if output.get('user') == mention_bot():
-                        return None, None, None, None #Don't care about the bot's own messages
-                    return (text, output['channel'], output['user'], output)
+                if output and "text" in output and mention_bot() in output["text"]:
+                    text = output["text"].split(mention_bot())[1].strip()
+                    if output.get("subtype") == "file_comment":
+                        return (text, output["channel"], output["file"]["user"], output)
+                    # futureproofing if the bot will ever respond to file comments as a file comment.
+                    # or output.get('file').get('user') == BOT_ID
+                    # this does not work if 'file' does not exist. 'file' is then None,
+                    # and you can't call get() on a NoneType object
+                    if output.get("user") == mention_bot():
+                        return None, None, None, None  # Don't care about the bot's own messages
+                    return (text, output["channel"], output["user"], output)
         return None, None, None, None
 
     def handle_command(self, text, channel, user, output):
@@ -115,14 +120,16 @@ class BotClient:
         Nothing
         """
         if not text:
-            self.respond_to(channel, user, "You tagged me! Try " + mention_bot() + " `list` to get started.")
+            self.respond_to(
+                channel, user, "You tagged me! Try " + mention_bot() + " `list` to get started."
+            )
             return
 
         text = text.split()
         command = text[0].lower()
         log_to_console("Command used was '" + command + "'")
 
-        arguments = text[1:] # I think this is clearer than passing on a modified text array
+        arguments = text[1:]  # I think this is clearer than passing on a modified text array
         self.choose_command(command, arguments, channel, user, output)
 
     def choose_command(self, command, arguments, channel, user, output):
@@ -130,12 +137,16 @@ class BotClient:
         Helper function to choose the command corresponding to the command
         """
         if not command in constants.COMMANDS:
-            return self.respond_to(channel, user, (
-                "I'm sorry, I dont understand.\n"
-                f"Try `{mention_bot()} list` or `{mention_bot()} help`"
-            ),
-                ephemeral=True)
-        
+            return self.respond_to(
+                channel,
+                user,
+                (
+                    "I'm sorry, I dont understand.\n"
+                    f"Try `{mention_bot()} list` or `{mention_bot()} help`"
+                ),
+                ephemeral=True,
+            )
+
         func = constants.COMMANDS[command]
         return func(self, channel, user, arguments, output)
 
@@ -163,8 +174,9 @@ class BotClient:
 
         `message` the message to be posted. Should be a string.
         """
-        self.slack_client.api_call("chat.postEphemeral", channel=channel,
-                            user=user, as_user=True, text=message)
+        self.slack_client.api_call(
+            "chat.postEphemeral", channel=channel, user=user, as_user=True, text=message
+        )
 
     def respond_to(self, channel, user, message, **kwargs):
         """
@@ -189,7 +201,7 @@ class BotClient:
         Then saves the files to system as `filename` in the directory the bot is being run from.
         """
         token = os.environ.get("SLACK_BOT_TOKEN")
-        res = requests.get(url, headers={'Authorization': 'Bearer %s' % token})
+        res = requests.get(url, headers={"Authorization": "Bearer %s" % token})
         res.raise_for_status()
 
         with open(filename, "wb") as file:
@@ -201,10 +213,7 @@ class BotClient:
         Deletes `file_id` from Slack.
         """
         delete_url = "https://slack.com/api/files.delete"
-        params = {
-            'token': os.environ.get("APP_TOKEN"),
-            'file': file_id
-        }
+        params = {"token": os.environ.get("APP_TOKEN"), "file": file_id}
         res = requests.get(delete_url, params=params)
         res.raise_for_status()
 
@@ -219,7 +228,7 @@ elif os.path.isfile(pathlib.Path.cwd().joinpath("setup", "secret-prod.env")):
 else:
     print("Environment variables not found...")
     print("Bot could not start.")
-    sys.exit() # Should probably handle this in run()..
+    sys.exit()  # Should probably handle this in run()..
 
 # Set up loggers
 if not os.path.exists("log"):
@@ -228,22 +237,24 @@ LOGGERS = {
     "output": logging.getLogger("Output"),
     "stacktrace": logging.getLogger("Stack trace"),
     "reconnect": logging.getLogger("Reconnect"),
-    "console": logging.getLogger("Console")
+    "console": logging.getLogger("Console"),
 }
 LOGGERS["output"].setLevel(logging.DEBUG)
 LOGGERS["stacktrace"].setLevel(logging.ERROR)
 LOGGERS["reconnect"].setLevel(logging.INFO)
 LOGGERS["console"].setLevel(logging.CRITICAL)
-FORMATTER = logging.Formatter("%(asctime)s - %(name)s"
-                              + " - %(levelname)s - %(message)s")
+FORMATTER = logging.Formatter("%(asctime)s - %(name)s" + " - %(levelname)s - %(message)s")
 HANDLERS = {
-    "output": RotatingFileHandler("log" + os.sep + "output.log",
-                                  maxBytes=1024*1024, backupCount=2),
-    "stacktrace": RotatingFileHandler("log" + os.sep + "stacktrace.log",
-                                      maxBytes=1024*128, backupCount=1),
-    "reconnect": RotatingFileHandler("log" + os.sep + "reconnect.log",
-                                     maxBytes=1024*128, backupCount=2),
-    "console": logging.StreamHandler()
+    "output": RotatingFileHandler(
+        "log" + os.sep + "output.log", maxBytes=1024 * 1024, backupCount=2
+    ),
+    "stacktrace": RotatingFileHandler(
+        "log" + os.sep + "stacktrace.log", maxBytes=1024 * 128, backupCount=1
+    ),
+    "reconnect": RotatingFileHandler(
+        "log" + os.sep + "reconnect.log", maxBytes=1024 * 128, backupCount=2
+    ),
+    "console": logging.StreamHandler(),
 }
 for key, logger in LOGGERS.items():
     HANDLERS[key].setFormatter(FORMATTER)

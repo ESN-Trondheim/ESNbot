@@ -11,6 +11,7 @@ import PIL.ImageOps
 # Make sure big images also load
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+
 def get_overlay_color(argument):
     """
     Determines the color the user wants the watermark overlay to be.
@@ -23,6 +24,7 @@ def get_overlay_color(argument):
         elif "white" in argument:
             return "white"
     return "color"
+
 
 def get_overlay_position(argument):
     """
@@ -39,6 +41,7 @@ def get_overlay_position(argument):
             return "bl"
     return "br"
 
+
 def calculate_ratio(start, overlay):
     """
     Calculates the ratio to be used when resizing the logo and white background.
@@ -48,6 +51,7 @@ def calculate_ratio(start, overlay):
     overlay_new_width = int(start.size[0] / factor)
     ratio = overlay_new_width / overlay.size[0]
     return ratio
+
 
 def new_overlay_size(overlay, ratio):
     """
@@ -59,6 +63,7 @@ def new_overlay_size(overlay, ratio):
     overlay_new_height = int(overlay.size[1] * ratio)
     return (overlay_new_width, overlay_new_height)
 
+
 def valid_overlay_positions(start, overlay):
     """
     Determines the coordinates for all four possible `overlay` positions,
@@ -68,12 +73,13 @@ def valid_overlay_positions(start, overlay):
 
     """
     position = {
-        'tl': (0, 0),
-        'tr': (start.size[0] - overlay.size[0], 0),
-        'bl': (0, start.size[1] - overlay.size[1]),
-        'br': (start.size[0] - overlay.size[0], start.size[1] - overlay.size[1])
+        "tl": (0, 0),
+        "tr": (start.size[0] - overlay.size[0], 0),
+        "bl": (0, start.size[1] - overlay.size[1]),
+        "br": (start.size[0] - overlay.size[0], start.size[1] - overlay.size[1]),
     }
     return position
+
 
 def invert_bg(background):
     """
@@ -90,6 +96,7 @@ def invert_bg(background):
     else:
         background = PIL.ImageOps.invert(background)
     return background
+
 
 def watermark(start_img, argument, filename):
     """
@@ -133,12 +140,14 @@ def watermark(start_img, argument, filename):
     start_img.paste(logo, selected_pos_logo, logo)
     start_img.save(filename)
 
+
 def extract(filename, path):
     """
     Extracts all files from a zip archive to `path`
     """
     with zipfile.ZipFile(filename) as myfile:
         myfile.extractall(path=path)
+
 
 def compress(filename, path):
     """
@@ -155,6 +164,7 @@ def compress(filename, path):
                 arcname = os.path.join(root, file).replace(path + os.sep, "")
                 print(arcname, flush=True)
                 my_zip_file.write(os.path.join(root, file), arcname=arcname)
+
 
 def watermark_folder(argument, path):
     """
@@ -178,6 +188,7 @@ def watermark_folder(argument, path):
             watermark(img, argument, os.path.join(root, file))
     return supported_files
 
+
 def watermark_zip(argument, filename):
     """
     Extracts all files from zip archive `filename` to a directory.
@@ -196,6 +207,7 @@ def watermark_zip(argument, filename):
     compress(filename, path)
     delete_directory(path)
     return supported_files
+
 
 def delete_directory(path):
     """
