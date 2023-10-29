@@ -23,8 +23,7 @@ def esnfarger(client, channel, user, argument, output):
 
 
 def esnfont(client, channel, user, argument, output):
-    client.respond_to(
-        channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
+    client.respond_to(channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
 
 
 def bot_help(client, channel, user, argument, output):
@@ -32,12 +31,10 @@ def bot_help(client, channel, user, argument, output):
         argument.append("help")
     if argument[0].lower() in constants.COMMANDS_HELP:
         client.respond_to(
-            channel, user, "`" +
-            argument[0].lower() + "`\n" + constants.COMMANDS_HELP[argument[0]]
+            channel, user, "`" + argument[0].lower() + "`\n" + constants.COMMANDS_HELP[argument[0]]
         )
     else:
-        client.respond_to(
-            channel, user, "I'm not sure what you want help with.")
+        client.respond_to(channel, user, "I'm not sure what you want help with.")
 
 
 def kontaktinfo(client, channel, user, argument, output):
@@ -60,15 +57,13 @@ def kontaktinfo(client, channel, user, argument, output):
         )
         return
 
-    response = gsheets.get_info_from_sheet(
-        argument[0], contact_info_sheet, "Telefon", "E-post")
+    response = gsheets.get_info_from_sheet(argument[0], contact_info_sheet, "Telefon", "E-post")
     if response:
         client.respond_to(
             channel, user, response
         )  # Backticks to enclose it in a code block in Slack
     else:
-        client.respond_to(
-            channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
+        client.respond_to(channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
 
 
 def command_list(client, channel, user, argument, output):
@@ -112,13 +107,11 @@ def vinstraff(client, channel, user, argument, output):
         )
         return
 
-    response = gsheets.get_info_from_sheet(
-        argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
+    response = gsheets.get_info_from_sheet(argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
     if response:
         client.respond_to(channel, user, response)
     else:
-        client.respond_to(
-            channel, user, "Sorry, could not find '" + argument[0] + "'")
+        client.respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
 
 
 def watermark(client, channel, user, argument, output):
@@ -154,8 +147,7 @@ def watermark(client, channel, user, argument, output):
         try:
             all_images_watermarked = wm.watermark_zip(argument, filename)
         except wm.zipfile.BadZipFile:
-            client.respond_to(
-                channel, user, "That does not seem to be a valid zip file.")
+            client.respond_to(channel, user, "That does not seem to be a valid zip file.")
             os.remove(filename)
             return
     else:
@@ -230,8 +222,7 @@ def coverphoto(client, channel, user, argument, output):
     try:
         background_img = cp.Image.open(filename)
     except OSError:
-        client.respond_to(
-            channel, user, "That is not a valid image format.\n" + not_valid_format)
+        client.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
         os.remove(filename)
         client.delete_file(original_file_id)
         return

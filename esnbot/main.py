@@ -37,14 +37,12 @@ class BotClient:
                         self.slack_client.rtm_read(), LOGGERS
                     )
                 except TimeoutError:
-                    LOGGERS["reconnect"].info(
-                        "Session timed out [TimeoutError].")
+                    LOGGERS["reconnect"].info("Session timed out [TimeoutError].")
                     log_to_console("Session timed out [TimeoutError].")
                     LOGGERS["reconnect"].info("Initiating new session...")
                     log_to_console("Initiating new session...")
                     if self.slack_client.rtm_connect(auto_reconnect=True, with_team_state=False):
-                        LOGGERS["reconnect"].info(
-                            "ESNbot reconnected and running...")
+                        LOGGERS["reconnect"].info("ESNbot reconnected and running...")
                         log_to_console("ESNbot reconnected and running...")
                     else:
                         LOGGERS["reconnect"].error("Reconnection failed.")
@@ -84,20 +82,16 @@ class BotClient:
                 if output["type"] == "goodbye":
                     LOGGERS["output"].info("Session ended. ('goodbye' event)")
                     log_to_console("Session ended. ('goodbye' event)")
-                    LOGGERS["output"].info(
-                        "Initiating new session... ('goodbye' event)")
-                    log_to_console(
-                        "Initiating new session... ('goodbye' event)")
+                    LOGGERS["output"].info("Initiating new session... ('goodbye' event)")
+                    log_to_console("Initiating new session... ('goodbye' event)")
                     if self.slack_client.rtm_connect(auto_reconnect=True):
                         LOGGERS["output"].info(
                             "ESNbot reconnected and running... ('goodbye' event)"
                         )
-                        log_to_console(
-                            "ESNbot reconnected and running... ('goodbye' event)")
+                        log_to_console("ESNbot reconnected and running... ('goodbye' event)")
                     else:
                         LOGGERS["output"].error("Reconnection failed.")
-                        log_to_console(
-                            "Reconnection failed. ('goodbye' event)")
+                        log_to_console("Reconnection failed. ('goodbye' event)")
                 if output and "text" in output and mention_bot() in output["text"]:
                     text = output["text"].split(mention_bot())[1].strip()
                     if output.get("subtype") == "file_comment":
@@ -145,7 +139,9 @@ class BotClient:
             LOGGERS["stacktrace"].error(str(exc))
             LOGGERS["stacktrace"].error(traceback.format_exc())
             self.respond_to(
-                channel, user, "Something went wrong while executing your command.\nPlease try again. 😅"
+                channel,
+                user,
+                "Something went wrong while executing your command.\nPlease try again. 😅",
             )
 
     def choose_command(self, command, arguments, channel, user, output):
@@ -176,8 +172,7 @@ class BotClient:
 
         `message` the message to be posted. Should be a string.
         """
-        self.slack_client.api_call(
-            "chat.postMessage", channel=channel, as_user=True, text=message)
+        self.slack_client.api_call("chat.postMessage", channel=channel, as_user=True, text=message)
 
     def post_ephemeral_message(self, channel, user, message):
         """
@@ -208,8 +203,7 @@ class BotClient:
         `user` the ID of the user the message should be directed at.
         """
         if kwargs.get("ephemeral", False):
-            self.post_ephemeral_message(
-                channel, user, mention_user(user) + "\n" + message)
+            self.post_ephemeral_message(channel, user, mention_user(user) + "\n" + message)
             return
         self.post_message(channel, mention_user(user) + "\n" + message)
 
@@ -238,12 +232,10 @@ class BotClient:
 
 # Using pathlib to construct path so we make sure that it works on both Windows and Linux
 if os.path.isfile(pathlib.Path.cwd().joinpath("setup", "secret-dev.env")):
-    dotenv.load_dotenv(dotenv_path=pathlib.Path.cwd().joinpath(
-        "setup", "secret-dev.env"))
+    dotenv.load_dotenv(dotenv_path=pathlib.Path.cwd().joinpath("setup", "secret-dev.env"))
     print("secret-dev.env loaded...")
 elif os.path.isfile(pathlib.Path.cwd().joinpath("setup", "secret-prod.env")):
-    dotenv.load_dotenv(dotenv_path=pathlib.Path.cwd().joinpath(
-        "setup", "secret-prod.env"))
+    dotenv.load_dotenv(dotenv_path=pathlib.Path.cwd().joinpath("setup", "secret-prod.env"))
     print("secret-prod.env loaded...")
 else:
     print("Environment variables not found...")
@@ -263,8 +255,7 @@ LOGGERS["output"].setLevel(logging.DEBUG)
 LOGGERS["stacktrace"].setLevel(logging.ERROR)
 LOGGERS["reconnect"].setLevel(logging.INFO)
 LOGGERS["console"].setLevel(logging.CRITICAL)
-FORMATTER = logging.Formatter(
-    "%(asctime)s - %(name)s" + " - %(levelname)s - %(message)s")
+FORMATTER = logging.Formatter("%(asctime)s - %(name)s" + " - %(levelname)s - %(message)s")
 HANDLERS = {
     "output": RotatingFileHandler(
         "log" + os.sep + "output.log", maxBytes=1024 * 1024, backupCount=2
