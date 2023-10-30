@@ -15,6 +15,7 @@ COMMANDS = {
     "kontaktinfo": commands.kontaktinfo,
     "watermark": commands.watermark,
     "coverphoto": commands.coverphoto,
+    "passord": commands.passord,
 }
 
 COMMANDS_HELP = {
@@ -86,6 +87,7 @@ COMMANDS_HELP = {
         f'>{mention_bot()} `coverphoto buddy "Title" "Subtitle" "Subtitle2"`\n'
         f'>{mention_bot()} `coverphoto buddy cyan "Title" "Subtitle"`\n'
     ),
+    "passord": f"Use `passord 'service'` to get the password for `service`\n",
 }
 
 IGNORED_MESSAGE_TYPES = [

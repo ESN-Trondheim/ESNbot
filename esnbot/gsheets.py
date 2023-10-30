@@ -11,8 +11,8 @@ CREDENTIALS = ServiceAccountCredentials.from_json_keyfile_name(
 )
 
 
-def open_spreadsheet(sheet_key):
-    gsheet = gspread.authorize(CREDENTIALS)
+def open_spreadsheet(sheet_key, credentials=CREDENTIALS):
+    gsheet = gspread.authorize(credentials)
     contact_info_sheet = gsheet.open_by_key(os.environ.get(sheet_key)).sheet1
     log_to_console("Spreadsheet opened...")
     return contact_info_sheet.get_all_records()
@@ -28,6 +28,19 @@ def get_info_from_sheet(name, sheet, *args):
             response_list.append(found_name)
             for arg in args:
                 response_list.append(f"{arg}: {str(column[arg])}\n")
+            response_list.append("```\n")
+    response = ("").join(response_list)
+    return response
+
+
+def get_password_from_sheet(name, sheet):
+    response_list = []
+    name = name.lower()
+    for column in sheet:
+        if column["Tjeneste"].lower().startswith(name):
+            response_list.append("```")
+            found_password = f"{column['Tjeneste']} {column['Passord']}:\n"
+            response_list.append(found_password)
             response_list.append("```\n")
     response = ("").join(response_list)
     return response
