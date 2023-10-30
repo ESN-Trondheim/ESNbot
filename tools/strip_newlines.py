@@ -9,6 +9,7 @@ environment variables.
 
 import sys
 
+
 def main(argv):
     if len(argv) > 1:
         with open(argv[1], "r") as file:
@@ -18,6 +19,7 @@ def main(argv):
                 file_out.write(stripped_string)
     else:
         print("Please supply a file name.")
+
 
 if __name__ == "__main__":
     main(sys.argv)

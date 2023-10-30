@@ -1,2 +1,4 @@
-pylint
+-r requirements.txt
 black
+isort
+pylint
