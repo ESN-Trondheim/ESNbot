@@ -1,9 +1,8 @@
 cd /opt/ESNbot
-# Not strictly necessary to stop script and deactivate env if screen session is killed anyway
 # "^C" is ctrl+c
 # "^M" is enter, necessary so that commands will run instead of just writing to console.
-# screen -S esnbot stuff "^C" #ctrl+c to stop python script
-# screen -S esnbot stuff "deactivate^M"
+screen -S esnbot stuff "^C" #ctrl+c to stop python script
+screen -S esnbot stuff "deactivate^M"
 screen -XS esnbot quit
 git pull
 screen -dmS esnbot
