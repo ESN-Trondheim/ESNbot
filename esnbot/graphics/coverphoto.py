@@ -67,11 +67,7 @@ def blend_color(background, color, dimensions):
 
 
 def overlay_images(background, overlay):
-    # TODO figure out this mess. I think it's actually most simple to just switch mode. alpha_composite requires both images to have an alpha channel
-    background = background.convert(mode="RGB")
-    # background.mode = "RGB" # necessary to get proper antialiasing on overlay when background is png/rgba
     background.paste(overlay, (0, 0), overlay)
-    # background = Image.alpha_composite(background, overlay) # this is simpler, and works just as good
     return background
 
 
@@ -150,7 +146,8 @@ def create_coverphoto(background, filename, argument):
     color = ESN_COLORS.get(color, ESN_COLORS["blue"])
 
     title, subtitle, subtitle2 = get_title(argument)
-    background = resize_background(background, dimensions)
+    background = background.convert(mode="RGB")
+    background, bg_low_res = resize_background(background, dimensions)
     logos = "activities" if "activities" in argument else "regular"
     cover = overlay_images(blend_color(background, color, dimensions), LOGOS[logos])
     if subtitle or subtitle2:
@@ -160,6 +157,7 @@ def create_coverphoto(background, filename, argument):
     else:
         overlay_text(cover, title, FONTS["title"], V_OFFFSETS[logos]["titleonly"])
     cover.save(filename, quality=95)  # quality only affects jpg images
+    return bg_low_res
 
 
 def open_background_img(filename):
@@ -173,12 +171,14 @@ def open_background_img(filename):
 
 
 def resize_background(background, dimensions):
+    bg_low_res = False
     if background.size == dimensions:
         return background
     if background.size[0] < dimensions[0] / 1.33 or background.size[1] < dimensions[1] / 1.33:
         print(
             "Resolution is low. You will get a better result if you have an image with higher resolution."
         )
+        bg_low_res = True
     background_aspect_ratio = background.size[0] / background.size[1]
     # TODO the following could probably be a function instead of two almost identical blocks of code
     aspect_ratio = dimensions[0] / dimensions[1]
@@ -207,4 +207,4 @@ def resize_background(background, dimensions):
             coords = (padding, 0, background.size[0] - padding, dimensions[1])
             background = background.crop(coords)
             print(background.size)
-    return background
+    return background, bg_low_res

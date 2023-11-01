@@ -345,13 +345,29 @@ def coverphoto(client, channel, user, argument, output):
         os.remove(filename)
         client.delete_file(original_file_id)
         return
-    cp.create_coverphoto(background_img, filename, argument)
+
+    # TODO: This needs finetuning, not sure if TypeError can occur several places,
+    # and the exception should maybe be logged as well?
+    # Leaving this here for now, but this needs to be followed up at some point
+    # try:
+    #     cp.create_coverphoto(background_img, filename, argument)
+    # except TypeError:
+    #     client.respond_to(channel, user, "The image is causing trouble")
+    #     os.remove(filename)
+    #     return
+    bg_low_res = cp.create_coverphoto(background_img, filename, argument)
     log_to_console("Coverphoto created and saved...")
 
+    bg_low_res_notify = (
+        "PS: Resolution is low. You will get a better result if you have an image with higher resolution."
+        if bg_low_res
+        else ""
+    )
     comment = (
         f"{mention_user(user)}\n"
         "Here's your cover photo! Your uploaded picture will now be deleted\n"
         "Please upload the cover photo to the appropriate folder on Google Drive!\n"
+        f"{bg_low_res_notify}"
     )
     client.slack_client.api_call(
         "files.upload", file=open(filename, "rb"), channels=channel, initial_comment=comment
