@@ -105,6 +105,8 @@ def watermark(start_img, argument, filename):
     Default is colors and bottom right corner.
     Then saves the resulting image to `filename` in the same folder the script runs from.
     """
+    # Must convert so that the result will be in colors in case of greyscale images.
+    start_img = start_img.convert(mode="RGB")
     white_bg = Image.open(pathlib.Path.cwd().joinpath("esnbot", "assets", "bg.png"))
     # Must calculate ratio from white background, the size looks best that way.
     ratio = calculate_ratio(start_img, white_bg)
