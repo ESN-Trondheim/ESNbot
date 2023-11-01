@@ -1,42 +1,74 @@
 import os
+from pathlib import Path
 
-import constants
 import graphics.coverphoto as cp
 import graphics.watermark as wm
 import gsheets
 import gspread
-from utils import log_to_console, mention_user
+from core_commands import COMMANDS_NESTED, printdict, register_command
+from utils import log_to_console, mention_bot, mention_user
 
 
+@register_command(
+    keyword="esnfarger",
+    help_text="Displays the official ESN colors along with their hex color code.",
+    visible=True,
+)
 def esnfarger(client, channel, user, argument, output):
     client.respond_to(
         channel,
         user,
-        "• ESN Cyan #00aeef\n"
-        + "• ESN Magenta #ec008c\n"
-        + "• ESN Green #7ac143\n"
-        + "• ESN Orange #f47b20\n"
-        + "• ESN Dark Blue #2e3192\n"
-        + "• Black #000000\n"
-        + "• White #ffffff",
+        (
+            "• ESN Cyan #00aeef\n"
+            + "• ESN Magenta #ec008c\n"
+            + "• ESN Green #7ac143\n"
+            + "• ESN Orange #f47b20\n"
+            + "• ESN Dark Blue #2e3192\n"
+            + "• Black #000000\n"
+            + "• White #ffffff"
+        ),
     )
 
 
+@register_command(
+    keyword="esnfont",
+    help_text="Displays the names of the official ESN fonts.",
+    visible=True,
+)
 def esnfont(client, channel, user, argument, output):
     client.respond_to(channel, user, "Display font: Kelson Sans\n" + "Content font: Lato")
 
 
+@register_command(
+    keyword="help",
+    help_text=(
+        f"Use `help 'command'` to get help using that command.\n"
+        f"Some examples include:\n"
+        f">•{mention_bot()} `help`\n"
+        f">•{mention_bot()} `help list`\n"
+        f"For a list of all available commands, use  `list`"
+    ),
+    visible=True,
+)
 def bot_help(client, channel, user, argument, output):
     if not argument:
         argument.append("help")
-    if argument[0].lower() in constants.COMMANDS_HELP:
+    if argument[0].lower() in COMMANDS_NESTED:
         client.respond_to(
-            channel, user, "`" + argument[0].lower() + "`\n" + constants.COMMANDS_HELP[argument[0]]
+            channel, user, f"`{argument[0].lower()}`\n{COMMANDS_NESTED[argument[0]]['help_text']}"
         )
     else:
         client.respond_to(channel, user, "I'm not sure what you want help with.")
 
 
+@register_command(
+    keyword="kontaktinfo",
+    help_text=(
+        f"Use `kontaktinfo 'first name'` to get contact info for `first name`\n"
+        f"Displays the link to the contact info sheet if no name is entered."
+    ),
+    visible=True,
+)
 def kontaktinfo(client, channel, user, argument, output):
     if not argument:
         return client.respond_to(channel, user, os.environ.get("CONTACT_INFO"))
@@ -66,13 +98,27 @@ def kontaktinfo(client, channel, user, argument, output):
         client.respond_to(channel, user, "Sorry, could not find anyone named '" + argument[0] + "'")
 
 
+@register_command(
+    keyword="list",
+    help_text=("Displays a list of all available commands."),
+    visible=True,
+)
 def command_list(client, channel, user, argument, output):
-    command_string = ""
-    for command in constants.COMMANDS:
-        command_string = command_string + "`" + command + "`\n"
-    client.respond_to(channel, user, "Available commands:\n" + command_string)
+    commands = [
+        f"`{command}`\n" for command, keyword in COMMANDS_NESTED.items() if keyword["visible"]
+    ]
+    cmd_string = "".join(commands)
+    # command_string = ""
+    # for command in COMMANDS_NESTED:
+    #     command_string = command_string + "`" + command + "`\n"
+    client.respond_to(channel, user, "Available commands:\n" + cmd_string)
 
 
+@register_command(
+    keyword="reimbursement",
+    help_text=("Displays the link to the reimbursement sheet and the guidelines."),
+    visible=True,
+)
 def reimbursement(client, channel, user, argument, output):
     client.respond_to(
         channel,
@@ -84,10 +130,31 @@ def reimbursement(client, channel, user, argument, output):
     )
 
 
+@register_command(
+    keyword="standliste",
+    help_text=("Displays the link to the stand list sheet."),
+    visible=True,
+)
 def standliste(client, channel, user, argument, output):
     client.respond_to(channel, user, os.environ.get("STAND_LIST"))
 
 
+@register_command(
+    keyword="ølstraff",
+    help_text=(
+        f"Use `ølstraff 'first name'` to get the standings for `first name`\n"
+        f"Displays the link to the rules if no name is entered."
+    ),
+    visible=True,
+)
+@register_command(
+    keyword="vinstraff",
+    help_text=(
+        f"Use `vinstraff 'first name'` to get the standings for `first name`\n"
+        f"Displays the link to the rules if no name is entered."
+    ),
+    visible=True,
+)
 def vinstraff(client, channel, user, argument, output):
     if not argument:
         return client.respond_to(channel, user, os.environ.get("BEER_WINE_PENALTY"))
@@ -114,6 +181,30 @@ def vinstraff(client, channel, user, argument, output):
         client.respond_to(channel, user, "Sorry, could not find '" + argument[0] + "'")
 
 
+@register_command(
+    keyword="watermark",
+    help_text=(
+        f"Watermarks a given picture.\n"
+        f"Upload the picture (or a zip file containing pictures)"
+        f" and add a comment *when uploading* with"
+        f" the watermark command.\n"
+        f"You may choose the color of the logo and the position,"
+        f" but the default options are recommended.\n"
+        f"Default is colors in the bottom right corner.\n"
+        f"Valid colors are `color`, `black` and `white`.\n"
+        f"Positions are abbreviated as follows:\n"
+        f">•`tl` = top left\n"
+        f">•`tr` = top right\n"
+        f">•`bl` = bottom left\n"
+        f">•`br` = bottom right\n"
+        f"*Examples*\n"
+        f">{mention_bot()} `watermark` \n"
+        f">{mention_bot()} `watermark bl`\n"
+        f">{mention_bot()} `watermark white tl`\n"
+        f">{mention_bot()} `watermark tr black`\n"
+    ),
+    visible=True,
+)
 def watermark(client, channel, user, argument, output):
     # if output.get('subtype') != "file_share":
     #    # command_help expects an array containing the help item
@@ -195,6 +286,34 @@ def watermark(client, channel, user, argument, output):
     log_to_console("File deleted from system...")
 
 
+@register_command(
+    keyword="coverphoto",
+    help_text=(
+        f"Creates a cover photo for Facebook from the uploaded picture.\n"
+        f"Upload the picture and add a comment *when uploading* with"
+        f" the command, the color of the overlay, if it's a cover photo for buddy"
+        f" the title and optionally subtitle(s).\n"
+        f"Write `buddy` directly after `coverphoto`"
+        f" if you want a buddy cover photo.\n"
+        f'Title and subtitles have to be enclosed in quotation marks (").\n'
+        f"You may enter up to two subtitles.\n"
+        f"If no color is entered, the cover photo will be blue.\n"
+        f"Valid colors are `cyan`, `magenta`, `green`, `orange`,"
+        f"`blue`.\n"  # and `all`. `all` will return a zipped file "
+        # f"containing all five color variants.\n"
+        f"For best results, your image should be 1568*588 or larger.\n"
+        f"If the image is larger, it will be cropped around the center "
+        f"to fit the dimensions.\n"
+        f"If the image is smaller, it will be upscaled and cropped around the "
+        f"center to fit the dimensions.\n"
+        f"*Examples*\n"
+        f'>{mention_bot()} `coverphoto "Title"`\n'
+        f'>{mention_bot()} `coverphoto blue "Title" "Subtitle"`\n'
+        f'>{mention_bot()} `coverphoto buddy "Title" "Subtitle" "Subtitle2"`\n'
+        f'>{mention_bot()} `coverphoto buddy cyan "Title" "Subtitle"`\n'
+    ),
+    visible=True,
+)
 def coverphoto(client, channel, user, argument, output):
     log_to_console("Arguments supplied by user: " + str(argument))
     if not output.get("files"):
@@ -246,3 +365,16 @@ def coverphoto(client, channel, user, argument, output):
     # Deletes file from system
     os.remove(filename)
     log_to_console("File deleted from system...")
+
+
+@register_command(
+    keyword="uptime", help_text="Shows when the bot was last restarted", visible=False
+)
+def show_uptime(client, channel, user, argument, output):
+    with open(Path.cwd().joinpath("log", "connected.log"), "r") as file:
+        last_connected = file.read().split(": ESNbot")[0]
+    client.respond_to(channel, user, f"I went online {last_connected}")
+
+
+if __name__ == "__main__":
+    printdict()

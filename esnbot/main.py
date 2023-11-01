@@ -10,9 +10,11 @@ import time
 import traceback
 from logging.handlers import RotatingFileHandler
 
+import commands  # Not used directly, but need to import commands somewhere so that the decorators and the commands are instantiated.
 import constants
 import dotenv
 import requests
+from core_commands import COMMANDS_NESTED
 from slackclient import SlackClient
 from utils import log_to_console, log_to_file_and_console, mention_bot, mention_user
 
@@ -148,7 +150,7 @@ class BotClient:
         """
         Helper function to choose the command corresponding to the command
         """
-        if not command in constants.COMMANDS:
+        if not command in COMMANDS_NESTED:
             return self.respond_to(
                 channel,
                 user,
@@ -159,7 +161,7 @@ class BotClient:
                 ephemeral=True,
             )
 
-        func = constants.COMMANDS[command]
+        func = COMMANDS_NESTED[command][command]
         return func(self, channel, user, arguments, output)
 
     def post_message(self, channel, message):
