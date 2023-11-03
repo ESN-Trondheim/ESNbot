@@ -291,10 +291,10 @@ def watermark(client, channel, user, argument, output):
     help_text=(
         f"Creates a cover photo for Facebook from the uploaded picture.\n"
         f"Upload the picture and add a comment *when uploading* with"
-        f" the command, the color of the overlay, if it's a cover photo for buddy"
+        f" the command, the color of the overlay, if it's a cover photo for activities.esn.org"
         f" the title and optionally subtitle(s).\n"
-        f"Write `buddy` directly after `coverphoto`"
-        f" if you want a buddy cover photo.\n"
+        f"Write `activities` directly after `coverphoto`"
+        f" if you want a activities cover photo.\n"
         f'Title and subtitles have to be enclosed in quotation marks (").\n'
         f"You may enter up to two subtitles.\n"
         f"If no color is entered, the cover photo will be blue.\n"
