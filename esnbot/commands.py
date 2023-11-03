@@ -5,7 +5,7 @@ import graphics.coverphoto as cp
 import graphics.watermark as wm
 import gsheets
 import gspread
-from core_commands import COMMANDS_NESTED, printdict, register_command
+from core_commands import COMMANDS, register_command
 from utils import log_to_console, mention_bot, mention_user
 
 
@@ -53,9 +53,9 @@ def esnfont(client, channel, user, argument, output):
 def bot_help(client, channel, user, argument, output):
     if not argument:
         argument.append("help")
-    if argument[0].lower() in COMMANDS_NESTED:
+    if argument[0].lower() in COMMANDS:
         client.respond_to(
-            channel, user, f"`{argument[0].lower()}`\n{COMMANDS_NESTED[argument[0]]['help_text']}"
+            channel, user, f"`{argument[0].lower()}`\n{COMMANDS[argument[0]]['help_text']}"
         )
     else:
         client.respond_to(channel, user, "I'm not sure what you want help with.")
@@ -100,13 +100,11 @@ def kontaktinfo(client, channel, user, argument, output):
 
 @register_command(
     keyword="list",
-    help_text=("Displays a list of all available commands."),
+    help_text="Displays a list of all available commands.",
     visible=True,
 )
 def command_list(client, channel, user, argument, output):
-    commands = [
-        f"`{command}`\n" for command, keyword in COMMANDS_NESTED.items() if keyword["visible"]
-    ]
+    commands = [f"`{command}`\n" for command, keyword in COMMANDS.items() if keyword["visible"]]
     cmd_string = "".join(commands)
     # command_string = ""
     # for command in COMMANDS_NESTED:
@@ -116,7 +114,7 @@ def command_list(client, channel, user, argument, output):
 
 @register_command(
     keyword="reimbursement",
-    help_text=("Displays the link to the reimbursement sheet and the guidelines."),
+    help_text="Displays the link to the reimbursement sheet and the guidelines.",
     visible=True,
 )
 def reimbursement(client, channel, user, argument, output):
@@ -132,7 +130,7 @@ def reimbursement(client, channel, user, argument, output):
 
 @register_command(
     keyword="standliste",
-    help_text=("Displays the link to the stand list sheet."),
+    help_text="Displays the link to the stand list sheet.",
     visible=True,
 )
 def standliste(client, channel, user, argument, output):
@@ -359,7 +357,7 @@ def coverphoto(client, channel, user, argument, output):
     log_to_console("Coverphoto created and saved...")
 
     bg_low_res_notify = (
-        "PS: Resolution is low. You will get a better result if you have an image with higher resolution."
+        "*PS:* Resolution is low. You will get a better result if you have an image with higher resolution."
         if bg_low_res
         else ""
     )
@@ -390,7 +388,3 @@ def show_uptime(client, channel, user, argument, output):
     with open(Path.cwd().joinpath("log", "connected.log"), "r") as file:
         last_connected = file.read().split(": ESNbot")[0]
     client.respond_to(channel, user, f"I went online {last_connected}")
-
-
-if __name__ == "__main__":
-    printdict()

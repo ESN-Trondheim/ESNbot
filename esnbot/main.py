@@ -14,7 +14,7 @@ import commands  # Not used directly, but need to import commands somewhere so t
 import constants
 import dotenv
 import requests
-from core_commands import COMMANDS_NESTED
+from core_commands import COMMANDS
 from slackclient import SlackClient
 from utils import log_to_console, log_to_file_and_console, mention_bot, mention_user
 
@@ -81,7 +81,7 @@ class BotClient:
                 LOGGERS["output"].debug(str(output))
                 if output["type"] not in constants.IGNORED_MESSAGE_TYPES:
                     # maybe make this filter out ephemeral messages as well, like google drive messages
-                    log_to_console(str(output) + "\n")
+                    log_to_console(str(output))
                 if output["type"] == "goodbye":
                     LOGGERS["output"].info("Session ended. ('goodbye' event)")
                     log_to_console("Session ended. ('goodbye' event)")
@@ -151,7 +151,7 @@ class BotClient:
         """
         Helper function to choose the command corresponding to the command
         """
-        if not command in COMMANDS_NESTED:
+        if not command in COMMANDS:
             return self.respond_to(
                 channel,
                 user,
@@ -162,7 +162,7 @@ class BotClient:
                 ephemeral=True,
             )
 
-        func = COMMANDS_NESTED[command][command]
+        func = COMMANDS[command]["function"]
         return func(self, channel, user, arguments, output)
 
     def post_message(self, channel, message):
