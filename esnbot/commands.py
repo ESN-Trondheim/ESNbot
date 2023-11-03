@@ -309,8 +309,8 @@ def watermark(client, channel, user, argument, output):
         f"*Examples*\n"
         f'>{mention_bot()} `coverphoto "Title"`\n'
         f'>{mention_bot()} `coverphoto blue "Title" "Subtitle"`\n'
-        f'>{mention_bot()} `coverphoto buddy "Title" "Subtitle" "Subtitle2"`\n'
-        f'>{mention_bot()} `coverphoto buddy cyan "Title" "Subtitle"`\n'
+        f'>{mention_bot()} `coverphoto activities "Title" "Subtitle" "Subtitle2"`\n'
+        f'>{mention_bot()} `coverphoto activities cyan "Title" "Subtitle"`\n'
     ),
     visible=True,
 )
