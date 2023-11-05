@@ -81,7 +81,7 @@ class BotClient:
                 LOGGERS["output"].debug(str(output))
                 if output["type"] not in constants.IGNORED_MESSAGE_TYPES:
                     # maybe make this filter out ephemeral messages as well, like google drive messages
-                    log_to_console(str(output))
+                    log_to_console(f"{output}\n")
                 if output["type"] == "goodbye":
                     LOGGERS["output"].info("Session ended. ('goodbye' event)")
                     log_to_console("Session ended. ('goodbye' event)")
