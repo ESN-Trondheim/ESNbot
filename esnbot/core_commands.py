@@ -3,9 +3,12 @@ Decorators to provide utilities for commands.
 
 `register_command()`: Use this to register a command for use.
 
-Structure of `COMMANDS`:
-
 """
+
+
+from typing import Callable, Union
+
+COMMANDS: dict[str, dict[str, Union[Callable, str, bool]]] = {}
 """
 Structure of COMMANDS:
 
@@ -13,15 +16,10 @@ COMMANDS = {
     "list": {
         "function" = func,
         "help-text" = "help text",
-        "visible" = True, False
+        "visible" = True
     }
 }
 """
-
-
-from typing import Callable, Union
-
-COMMANDS: dict[str, dict[str, Union[Callable, str, bool]]] = {}
 
 
 # This is probably not the best way to type hint here, but it'll do for now
