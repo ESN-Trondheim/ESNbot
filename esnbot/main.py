@@ -22,6 +22,7 @@ class BotClient:
         self.slack_client = SlackClient(
             os.environ.get("SLACK_BOT_TOKEN")
         )  # pylint: disable=invalid-name
+        self.bot_id = os.environ.get("BOT_ID")
 
     def run(self):
         """
@@ -100,7 +101,7 @@ class BotClient:
                     # or output.get('file').get('user') == BOT_ID
                     # this does not work if 'file' does not exist. 'file' is then None,
                     # and you can't call get() on a NoneType object
-                    if output.get("user") == mention_bot():
+                    if output.get("user") == self.bot_id:
                         return None, None, None, None  # Don't care about the bot's own messages
                     return (text, output["channel"], output["user"], output)
         return None, None, None, None
