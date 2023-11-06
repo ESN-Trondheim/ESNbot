@@ -89,6 +89,21 @@ For a list of all available commands type `@[botname] list`
 * `coverphoto`: Creates a coverphoto for Facebook or activities.esn.org that is ready to be used.
 
 
+## Adding your own commands
+To add your own command, use the `core_commands.register_commnand` decorator. This will register the command with the bot, along with the help text for your command. 
+A simple example:
+```
+@register_command(
+    keyword="mycommand", help_text="My example command", visible=True
+)
+def my_custom_command(client, channel, user, argument, output):
+    client.respond_to(channel, user, "Hello, this is my_custom_command")
+```
+* `@<bot_name> mycommand`: The bot will respond with `Hello, this is my_custom_command`.
+* `@<bot_name> list`: The keyword (`mycommand`) will be a part of the response. If visible=False, the command will NOT be a part of the list.
+* `@<bot_name> help mycommand`: The bot will respond with `My example command`.
+
+
 ## Contributing
 Contributions are welcome!\
 You can contribute with both code and registering issues.
