@@ -6,9 +6,9 @@ Decorators to provide utilities for commands.
 """
 
 
-from typing import Callable, Union
+from collections.abc import Callable
 
-COMMANDS: dict[str, dict[str, Union[Callable, str, bool]]] = {}
+COMMANDS: dict[str, dict[str, Callable | str | bool]] = {}
 """
 Structure of COMMANDS:
 
