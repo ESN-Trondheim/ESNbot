@@ -90,7 +90,7 @@ For a list of all available commands type `@[botname] list`
 
 
 ## Adding your own commands
-To add your own command, use the `core_commands.register_commnand` decorator. This will register the command with the bot, along with the help text for your command. 
+To add your own command, use the `core_commands.register_command` decorator. This will register the command with the bot, along with the help text for your command. 
 A simple example:
 ```
 @register_command(
