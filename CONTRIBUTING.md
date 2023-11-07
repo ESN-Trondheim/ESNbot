@@ -8,6 +8,8 @@ Please try to label the issue appropriately. Use the `bug` label for bugs, `enha
 If you want to contribute with code, just fork this project and create a pull request with your proposed changes.\
 For members of the [ESN-Trondheim organisation](https://github.com/ESN-Trondheim), please create a branch with a descriptive name, and create your pull request from that branch.
 
+Please note that you should merge master into your branch prior to submitting your PR. Merge conflicts should also be resolved before submission.
+
 All [checks](https://github.com/ESN-Trondheim/ESNbot/actions) MUST pass for a PR to be accepted.
 
 This project the [Black](https://github.com/psf/black) code style (which is a [PEP 8](https://peps.python.org/pep-0008/) compliant opinionated formatter), with a line length of 100.\
