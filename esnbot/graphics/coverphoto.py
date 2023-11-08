@@ -145,6 +145,7 @@ def create_coverphoto(background, filename, argument):
     color = get_color(argument)
     color = ESN_COLORS.get(color, ESN_COLORS["blue"])
 
+    bg_low_res = False
     title, subtitle, subtitle2 = get_title(argument)
     background = background.convert(mode="RGB")
     background, bg_low_res = resize_background(background, dimensions)
@@ -173,7 +174,7 @@ def open_background_img(filename):
 def resize_background(background, dimensions):
     bg_low_res = False
     if background.size == dimensions:
-        return background
+        return background, bg_low_res
     if background.size[0] < dimensions[0] / 1.33 or background.size[1] < dimensions[1] / 1.33:
         print(
             "Resolution is low. You will get a better result if you have an image with higher resolution."
