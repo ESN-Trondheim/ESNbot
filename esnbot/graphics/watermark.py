@@ -117,19 +117,19 @@ def watermark(start_img, argument, filename):
     if overlay_color == "white":
         white_bg = invert_bg(white_bg)
 
-    white_bg = white_bg.resize(new_overlay_size(white_bg, ratio), Image.ANTIALIAS)
-    logo = logo.resize(new_overlay_size(logo, ratio), Image.ANTIALIAS)
+    white_bg = white_bg.resize(new_overlay_size(white_bg, ratio), Image.Resampling.LANCZOS)
+    logo = logo.resize(new_overlay_size(logo, ratio), Image.Resampling.LANCZOS)
 
     valid_pos_white = valid_overlay_positions(start_img, white_bg)
     valid_pos_logo = valid_overlay_positions(start_img, logo)
 
     # Transpose the background if another corner that bottom right is selected.
     if get_overlay_position(argument) == "tl":
-        white_bg = white_bg.transpose(Image.ROTATE_180)
+        white_bg = white_bg.transpose(Image.Transpose.ROTATE_180)
     elif get_overlay_position(argument) == "tr":
-        white_bg = white_bg.transpose(Image.FLIP_TOP_BOTTOM)
+        white_bg = white_bg.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
     elif get_overlay_position(argument) == "bl":
-        white_bg = white_bg.transpose(Image.FLIP_LEFT_RIGHT)
+        white_bg = white_bg.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
     selected_pos_white = valid_pos_white.get(get_overlay_position(argument))
     selected_pos_logo = valid_pos_logo.get(get_overlay_position(argument))
