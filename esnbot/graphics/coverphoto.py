@@ -75,7 +75,7 @@ def overlay_text(background, text, font, offset):
     draw = ImageDraw.Draw(background)
     left, top, right, bottom = draw.textbbox((0, 0), text=text, font=font)
     width = right - left
-    height = bottom - top # this is a little more offset than when using draw.textsize().
+    height = bottom - top  # this is a little more offset than when using draw.textsize().
     draw.text(
         ((background.size[0] - width) / 2, (background.size[1] - height) / 2 + offset),
         text,
@@ -85,7 +85,9 @@ def overlay_text(background, text, font, offset):
 
 def get_color(argument):
     if argument:
-        args = (" ").join(argument).split('"', maxsplit=1)[0]  # Only care about what's before titles
+        args = (
+            (" ").join(argument).split('"', maxsplit=1)[0]
+        )  # Only care about what's before titles
         # if "all" in args:
         #     pass
         for color_key in ESN_COLORS:
