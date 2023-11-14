@@ -240,6 +240,7 @@ def watermark(client, channel, user, argument, output):
             os.remove(filename)
             return
     else:
+        
         try:
             start_img = wm.Image.open(filename)
         except OSError:
@@ -247,7 +248,12 @@ def watermark(client, channel, user, argument, output):
                 channel, user, "That is not a valid image format.\n" + not_valid_format
             )
             os.remove(filename)
-            client.delete_file(original_file_id)
+            delete_file_result = client.delete_file(original_file_id)
+            if delete_file_result != 1:
+                log_to_console('Error ' + delete_file_result + ' while deleting the file\n')
+                client.respond_to(
+                channel, user, 'Error ' + delete_file_result + ' while deleting the file\n'
+            )
             return
         wm.watermark(start_img, argument, filename)
         all_images_watermarked = True
@@ -277,7 +283,12 @@ def watermark(client, channel, user, argument, output):
 
     # this is hacky, and not the intended way to use these tokens, but it works
     # Deletes file from Slack
-    client.delete_file(original_file_id)
+    delete_file_result = client.delete_file(original_file_id)
+    if delete_file_result != 1:
+                log_to_console('Error ' + delete_file_result + ' while deleting the file\n')
+                client.respond_to(
+                channel, user, 'Error ' + delete_file_result + ' while deleting the file\n'
+            )
     log_to_console("Original file deleted from client...")
     # Deletes file from system
     os.remove(filename)
@@ -341,7 +352,12 @@ def coverphoto(client, channel, user, argument, output):
     except OSError:
         client.respond_to(channel, user, "That is not a valid image format.\n" + not_valid_format)
         os.remove(filename)
-        client.delete_file(original_file_id)
+        delete_file_result = client.delete_file(original_file_id)
+        if delete_file_result != 1:
+                log_to_console('Error ' + delete_file_result + ' while deleting the file\n')
+                client.respond_to(
+                channel, user, 'Error ' + delete_file_result + ' while deleting the file\n'
+            )
         return
 
     # TODO: This needs finetuning, not sure if TypeError can occur several places,
@@ -374,7 +390,12 @@ def coverphoto(client, channel, user, argument, output):
 
     # this is hacky, and not the intended way to use these tokens, but it works
     # Deletes file from Slack
-    client.delete_file(original_file_id)
+    delete_file_result = client.delete_file(original_file_id)
+    if delete_file_result != 1:
+                log_to_console('Error ' + delete_file_result + ' while deleting the file\n')
+                client.respond_to(
+                channel, user, 'Error ' + delete_file_result + ' while deleting the file\n'
+            )
     log_to_console("Original file deleted from client...")
     # Deletes file from system
     os.remove(filename)
