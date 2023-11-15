@@ -28,8 +28,8 @@ class BotClient:
           Main function
       """
       if self.slack_client.rtm_connect(auto_reconnect=True, with_team_state=False):
-          log_to_file_and_console(f"log {os.sep} connected.log,
-                                  ESNbot connected and running..., w")
+          log_to_file_and_console(f"log {os.sep} connected.log",
+                                  "ESNbot connected and running...", "w")
           while True:
               try:
                   text, channel, user, output = self.parse_slack_output(self.slack_client.rtm_read(), LOGGERS)

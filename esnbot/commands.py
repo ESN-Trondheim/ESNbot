@@ -18,7 +18,7 @@ def esnfarger(client, channel, user, argument, output):
                + "• White #ffffff")
     
 def esnfont(client, channel, user, argument, output):
-    client.respond_to(f"{channel}, {user}, Display font: Kelson Sans\n Content font: Lato")
+    client.respond_to(f"{self}, {channel}, {user}, Display font: Kelson Sans\n Content font: Lato")
 
 def bot_help(client, channel, user, argument, output):
     if not argument:
@@ -55,7 +55,7 @@ def command_list(client, channel, user, argument, output):
     client.respond_to(channel, user, f"Available commands:\n {command_string}")
 
 def reimbursement(client, channel, user, argument, output):
-    client.respond_to(channel, user, f'Reimbursement form: {os.environ.get("REIMBURSEMENT_FORM")},
+    client.respond_to(channel, user, f'Reimbursement form: {os.environ.get("REIMBURSEMENT_FORM")}
                 \nGuidelines: {os.environ.get("REIMBURSEMENT_FORM_GUIDELINES")}')
 
 def standliste(client, channel, user, argument, output):
@@ -86,7 +86,7 @@ def watermark(client, channel, user, argument, output):
     #    # Displays help for watermark if watermark is not called from a file upload
     #    command_help(channel, ["watermark"], user, output)
     #else:
-    log_to_console(f"Arguments supplied by user: {str(argument)}")
+    log_to_console("Arguments supplied by user: " + str(argument))
     if not output.get('files'):
         # command_help expects an array containing the help item
         # Displays help for watermark if watermark is not called from a file upload
@@ -150,7 +150,7 @@ def watermark(client, channel, user, argument, output):
     log_to_console("File deleted from system...")
         
 def coverphoto(client, channel, user, argument, output):
-    log_to_console(f"Arguments supplied by user: {str(argument)}")
+    log_to_console("Arguments supplied by user: " + str(argument))
     if not output.get('files'):
         # command_help expects an array containing the help item
         # Displays help for coverphoto if coverphoto is not called from a file upload
