@@ -1,6 +1,7 @@
 # ESNbot
 <div align="center">
 
+[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
 [![Build](https://github.com/ESN-Trondheim/ESNbot/actions/workflows/build.yml/badge.svg)](https://github.com/ESN-Trondheim/ESNbot/actions/workflows/build.yml)
 [![Tests](https://github.com/ESN-Trondheim/ESNbot/actions/workflows/test.yml/badge.svg)](https://github.com/ESN-Trondheim/ESNbot/actions/workflows/test.yml)
 [![Formatting](https://github.com/ESN-Trondheim/ESNbot/actions/workflows/formatting.yml/badge.svg)](https://github.com/ESN-Trondheim/ESNbot/actions/workflows/formatting.yml)
@@ -22,6 +23,8 @@ This includes creating coverphotos for events, watermarking pictures, getting co
 
 ## Setup
 ### Prerequisites
+* Python 3.10.x
+    1. This project requires at least Python 3.10.x. Download and install from [python.org](https://www.python.org/downloads/release/python-3100/)
 * Slack tokens
     1. This project is still using [`rtm.connect`](https://api.slack.com/methods/rtm.connect), which means you have to create a [classic Slack App](https://api.slack.com/apps?new_classic_app=1). Note that this will change in the future.
     2. Give the app a name and choose a workspace
@@ -90,7 +93,7 @@ For a list of all available commands type `@[botname] list`
 
 
 ## Adding your own commands
-To add your own command, use the `core_commands.register_commnand` decorator. This will register the command with the bot, along with the help text for your command. 
+To add your own command, use the `core_commands.register_command` decorator. This will register the command with the bot, along with the help text for your command. 
 A simple example:
 ```
 @register_command(

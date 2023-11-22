@@ -73,7 +73,9 @@ def overlay_images(background, overlay):
 
 def overlay_text(background, text, font, offset):
     draw = ImageDraw.Draw(background)
-    width, height = draw.textsize(text, font)
+    left, top, right, bottom = draw.textbbox((0, 0), text=text, font=font)
+    width = right - left
+    height = bottom - top  # this is a little more offset than when using draw.textsize().
     draw.text(
         ((background.size[0] - width) / 2, (background.size[1] - height) / 2 + offset),
         text,
@@ -83,7 +85,9 @@ def overlay_text(background, text, font, offset):
 
 def get_color(argument):
     if argument:
-        args = (" ").join(argument).split('"')[0]  # Only care about what's before titles
+        args = (
+            (" ").join(argument).split('"', maxsplit=1)[0]
+        )  # Only care about what's before titles
         # if "all" in args:
         #     pass
         for color_key in ESN_COLORS:
@@ -145,6 +149,7 @@ def create_coverphoto(background, filename, argument):
     color = get_color(argument)
     color = ESN_COLORS.get(color, ESN_COLORS["blue"])
 
+    bg_low_res = False
     title, subtitle, subtitle2 = get_title(argument)
     background = background.convert(mode="RGB")
     background, bg_low_res = resize_background(background, dimensions)
@@ -173,7 +178,7 @@ def open_background_img(filename):
 def resize_background(background, dimensions):
     bg_low_res = False
     if background.size == dimensions:
-        return background
+        return background, bg_low_res
     if background.size[0] < dimensions[0] / 1.33 or background.size[1] < dimensions[1] / 1.33:
         print(
             "Resolution is low. You will get a better result if you have an image with higher resolution."
@@ -188,7 +193,7 @@ def resize_background(background, dimensions):
         resize_ratio = background.size[0] / dimensions[0]
         new_height = int(background.size[1] / resize_ratio)
         print(background.size)
-        background = background.resize((dimensions[0], new_height), Image.ANTIALIAS)
+        background = background.resize((dimensions[0], new_height), Image.Resampling.LANCZOS)
         print(background.size)
         if background.size[1] > dimensions[1]:
             padding = (background.size[1] - dimensions[1]) / 2
@@ -200,7 +205,7 @@ def resize_background(background, dimensions):
         resize_ratio = background.size[1] / dimensions[1]
         new_width = int(background.size[0] / resize_ratio)
         print(background.size)
-        background = background.resize((new_width, dimensions[1]), Image.ANTIALIAS)
+        background = background.resize((new_width, dimensions[1]), Image.Resampling.LANCZOS)
         print(background.size)
         if background.size[0] > dimensions[0]:
             padding = (background.size[0] - dimensions[0]) / 2
