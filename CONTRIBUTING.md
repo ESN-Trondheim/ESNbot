@@ -2,7 +2,7 @@
 
 ## Overview
 Contributions are welcome!\
-You can contribute with both code and registering issues.
+You may contribute with both code and registering issues.
 Check our [issues](https://github.com/ESN-Trondheim/ESNbot/issues) for tasks that needs doing, or register an issue that you think we should consider.\
 Please try to label the issue appropriately. Use the `bug` label for bugs, `enhancement` for either improving already existing features and requests for brand new features and `question` if you have a question or want more information about something.\
 If you want to contribute with code, just fork this project and create a pull request with your proposed changes.\
