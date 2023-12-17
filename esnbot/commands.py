@@ -89,7 +89,9 @@ def kontaktinfo(client, channel, user, argument, output):
         )
         return
 
-    response = gsheets.get_info_from_sheet(argument[0], contact_info_sheet, "Telefon", "E-post")
+    response = gsheets.get_contact_info_from_sheet(
+        argument[0], contact_info_sheet, "Telefon", "E-post"
+    )
     if response:
         client.respond_to(
             channel, user, response
@@ -172,7 +174,9 @@ def vinstraff(client, channel, user, argument, output):
         )
         return
 
-    response = gsheets.get_info_from_sheet(argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff")
+    response = gsheets.get_contact_info_from_sheet(
+        argument[0], beer_wine_sheet, "Vinstraff", "Ølstraff"
+    )
     if response:
         client.respond_to(channel, user, response)
     else:
@@ -388,3 +392,37 @@ def show_uptime(client, channel, user, argument, output):
     with open(Path.cwd().joinpath("log", "connected.log"), "r") as file:
         last_connected = file.read().split(": ESNbot")[0]
     client.respond_to(channel, user, f"I went online {last_connected}")
+
+
+@register_command(
+    keyword="inventory",
+    help_text=(f"Use `inventory 'search term'` to see if we have this in storage\n"),
+    visible=True,
+)
+def inventory(client, channel, user, argument, output):
+    if not argument:
+        return client.respond_to(channel, user, "Please supply a search term!")
+
+    try:
+        inventory_sheet = gsheets.open_spreadsheet("INVENTORY_KEY")
+    except gspread.SpreadsheetNotFound:  # Error handling
+        log_to_console("Spreadsheet not found...")
+        client.respond_to(
+            channel,
+            user,
+            "Could not find the spreadsheet.\n" + "Contact your webmaster for assistance.",
+        )
+        return
+    except TimeoutError:  # Error handling
+        client.respond_to(
+            channel, user, "Could not contact Google Drive, sorry.\n" + "Try again later."
+        )
+        return
+
+    response = gsheets.get_item_info(" ".join(argument), inventory_sheet)
+    if response:
+        client.respond_to(
+            channel, user, response
+        )  # Backticks to enclose it in a code block in Slack
+    else:
+        client.respond_to(channel, user, "Sorry, could not find this item.")
