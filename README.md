@@ -111,7 +111,7 @@ def my_custom_command(client, channel, user, argument, output):
 Contributions are welcome!\
 You can contribute with both code and registering issues.
 
-Please see our [contrubuting guidelines](CONTRIBUTING.md) for information about how to contribute to this project.
+Please see our [contributing guidelines](CONTRIBUTING.md) for information about how to contribute to this project.
 
 
 ## License
