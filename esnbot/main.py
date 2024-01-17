@@ -229,8 +229,18 @@ class BotClient:
         """
         delete_url = "https://slack.com/api/files.delete"
         params = {"token": os.environ.get("APP_TOKEN"), "file": file_id}
-        res = requests.get(delete_url, params=params)
-        res.raise_for_status()
+        res = requests.post(delete_url, params=params)
+        try:
+            res.raise_for_status()
+        except:
+            log_to_console('Error ' + res.status_code + 'while deleting the file')
+        if res.ok == True:
+            log_to_console('File successfuly deleted')
+            return 1
+        else:
+            log_to_console('Error ' + res.status_code + 'while deleting the file')
+            return res.status_code
+            
 
 
 # Using pathlib to construct path so we make sure that it works on both Windows and Linux
