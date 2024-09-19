@@ -52,3 +52,14 @@ def log_to_file_and_console(filename, message, mode):
     """
     log_to_console(message)
     log_to_file(filename, message, mode)
+
+
+def get_semester_start():
+    """
+    Returns the timestamp of the semester start
+    """
+    year = time.localtime().tm_year
+    month = time.localtime().tm_mon
+    if month < 8:
+        return time.mktime((year, 1, 1, 0, 0, 0, 0, 0, 0))
+    return time.mktime((year, 8, 1, 0, 0, 0, 0, 0, 0))

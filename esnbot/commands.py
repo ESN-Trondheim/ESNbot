@@ -5,8 +5,10 @@ import graphics.coverphoto as cp
 import graphics.watermark as wm
 import gsheets
 import gspread
+from slackclient import SlackClient
+import time
 from core_commands import COMMANDS, register_command
-from utils import log_to_console, mention_bot, mention_user
+from utils import get_semester_start, log_to_console, mention_bot, mention_user
 
 
 @register_command(
@@ -426,3 +428,47 @@ def inventory(client, channel, user, argument, output):
         )  # Backticks to enclose it in a code block in Slack
     else:
         client.respond_to(channel, user, "Sorry, could not find this item.")
+
+
+@register_command(
+    keyword="owed",
+    help_text=(
+        "Displays how many ølstraff and vinstraff there are in total, and how much that is owed."
+    ),
+    visible=True,
+)
+def owed(client, channel, user, argument, output):
+    # get messages from the channel #øl-og-vinstraff between now and the last time it was August 1st
+    user_client = SlackClient(os.environ.get("APP_TOKEN"))
+
+    messages = user_client.api_call(
+        "conversations.history",
+        channel="C02LQQYFL91",
+        oldest=str(int(get_semester_start())),  # Slack API expects these as strings
+        latest=str(int(time.time())),  # Convert timestamp to string format
+    )
+
+    # Initialize counters for beer and wine messages
+    beer_count = 0
+    wine_count = 0
+
+    # Process each message in the conversation history
+    print(messages)
+    if messages.get("ok"):  # Check if API call was successful
+        for message in messages.get("messages", []):  # Fallback to empty list if no messages
+            text = message.get("text", "")
+            if ":beer:" in text:
+                beer_count += 1
+            if ":wine:" in text:
+                wine_count += 1
+    else:
+        client.respond_to(channel, user, "Could not fetch messages from the conversation history.")
+        return
+    # calculate the total amount owed
+    total_owed = (beer_count * 30) + (wine_count * 100)
+
+    client.respond_to(
+        channel,
+        user,
+        f":beer: {beer_count}\n:wine_glass: {wine_count}\n:moneybag: {total_owed} kr",
+    )
